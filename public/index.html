@@ -182,8 +182,8 @@ tr:last-child td { border-bottom: none; }
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 80%;
-  height: 32px;
+  width: 50%;
+  height: 22px;
   border: 1.5px solid rgba(0,255,157,0.8);
   border-radius: 3px;
   pointer-events: none;
@@ -903,9 +903,9 @@ function extractStripFromVideo(video) {
 
 function extractStripFromCanvas(canvas) {
   const cw = canvas.width, ch = canvas.height;
-  // Strip: centre of frame, ~8% of height (min 24px), 80% width
+  // Strip: centre of frame, ~8% of height (min 24px), 50% width
   const stripH = Math.max(24, Math.round(ch * 0.08));
-  const stripW = Math.round(cw * 0.80);
+  const stripW = Math.round(cw * 0.50);
   const sx = Math.round((cw - stripW) / 2);
   const sy = Math.round(ch / 2) - Math.round(stripH / 2);
 
