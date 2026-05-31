@@ -869,8 +869,7 @@ const COLOR_HEX = {
    INIT
 ═══════════════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
-  const saved = sessionStorage.getItem('ec_apikey');
-  if (saved) document.getElementById('apiKey').value = saved;
+  document.getElementById('apiKey').value = 'SPhHz9xahv2jc22QYz1Z';
   document.getElementById('apiKey').addEventListener('input', e => sessionStorage.setItem('ec_apikey', e.target.value));
 });
 </script>
