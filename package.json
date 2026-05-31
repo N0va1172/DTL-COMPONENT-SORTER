@@ -3,6 +3,6 @@
   "version": "2.0.0",
   "description": "ElectroCom - Smart Electronic Component Tool",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   }
 }
