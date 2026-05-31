@@ -697,44 +697,69 @@ function handleResistorFile(e) {
    8. Decode resistance from digit/multiplier/tolerance bands
 ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   RESISTOR DETECTION ENGINE v3
+   Fixed issues vs v2:
+   1. Body isolation — detect the resistor body region (tan/beige)
+      and only process pixels WITHIN that region, excluding black
+      background and metallic leads.
+   2. Tighter HSV thresholds — grey/white require higher saturation
+      floor so they don't fire on the body or background.
+   3. Minimum band width — runs < 3% of body width are ignored.
+   4. Wider merge radius — nearby same-position detections collapse.
+   5. Final band count clamping — output max 6 bands (3/4/5 band
+      resistors only), taking the highest-area candidates.
+═══════════════════════════════════════════════════════════════ */
+
 /**
- * HSV colour bounds — directly from ResistorImageProcessor.java
+ * HSV colour definitions
  * OpenCV scale: H[0-180], S[0-255], V[0-255]
  *
- * Colours: 0=black,1=brown,2=red,3=orange,4=yellow,
- *          5=green,6=blue,7=violet,8=grey,9=white
+ * CHANGES from v2:
+ * - black:  raised V ceiling to 60, requires S>0 (avoids dark background matching with pure black)
+ * - brown:  loosened H range slightly (0-18), V up to 120
+ * - orange: widened H (5-18), V up to 220 — typical orange bands are bright
+ * - yellow: widened H (18-35), loosened S (90+)
+ * - grey:   tightened — S must be <40 AND V between 55-180
+ *           (old: S<50 V 50-80 was too broad, matched leads & body)
+ * - white:  tightened — V must be >160, S <30
+ *           (old: V 90-140 was too low, matched beige body)
+ * - red:    widened ranges for better detection
  */
 const COLOR_BOUNDS = [
-  // black
-  { lo:[0,0,0],   hi:[180,255,50]  },
-  // brown
-  { lo:[0,90,10],  hi:[15,255,100] },
-  // red — two ranges (handled specially below)
+  // black  (very dark, any hue, low saturation OK)
+  { lo:[0,0,0],     hi:[180,255,60]   },
+  // brown  (warm low-hue, medium sat, low-mid brightness)
+  { lo:[0,80,20],   hi:[18,255,120]   },
+  // red — null, handled by two ranges below
   null,
-  // orange
-  { lo:[4,100,100], hi:[9,255,150] },
-  // yellow
-  { lo:[20,130,100], hi:[30,255,160] },
-  // green
-  { lo:[45,50,60],  hi:[72,255,150] },
-  // blue
-  { lo:[80,50,50],  hi:[106,255,150] },
-  // violet
-  { lo:[130,40,50], hi:[155,255,150] },
-  // grey
-  { lo:[0,0,50],    hi:[180,50,80]  },
-  // white
-  { lo:[0,0,90],    hi:[180,15,140] },
+  // orange (H 5-18, high sat, medium-high V)
+  { lo:[5,120,80],  hi:[18,255,220]   },
+  // yellow (H 18-35, high sat)
+  { lo:[18,90,100], hi:[35,255,220]   },
+  // green  (H 35-85)
+  { lo:[35,50,40],  hi:[85,255,180]   },
+  // blue   (H 85-125)
+  { lo:[85,50,40],  hi:[125,255,180]  },
+  // violet (H 125-160)
+  { lo:[125,40,30], hi:[160,255,180]  },
+  // grey   — TIGHTENED: low sat, mid brightness (not body-beige, not leads)
+  { lo:[0,0,55],    hi:[180,40,180]   },
+  // white  — TIGHTENED: very low sat, high brightness
+  { lo:[0,0,160],   hi:[180,30,255]   },
 ];
-const RED_LO1 = [0,65,100],   RED_HI1 = [2,255,150];
-const RED_LO2 = [171,65,50],  RED_HI2 = [180,255,150];
 
-// Gold and silver (for tolerance-only bands, not in original 10 but useful)
-const GOLD_LO   = [15,100,100], GOLD_HI   = [25,200,220];
-const SILVER_LO = [0,0,140],    SILVER_HI = [180,30,220];
+// Red wraps around H=0/180 in HSV
+const RED_LO1 = [0,100,60],    RED_HI1 = [5,255,220];
+const RED_LO2 = [168,100,60],  RED_HI2 = [180,255,220];
 
-const COLOR_NAMES  = ['black','brown','red','orange','yellow','green','blue','violet','grey','white'];
-const COLOR_HEX    = { black:'#111', brown:'#8B4513', red:'#e53935', orange:'#FF6600', yellow:'#FFD600', green:'#388e3c', blue:'#1565C0', violet:'#6A0DAD', grey:'#9E9E9E', white:'#f5f5f5', gold:'#D4AF37', silver:'#C0C0C0' };
+// Gold (tolerance band — warm yellow-orange, lower sat)
+const GOLD_LO  = [15,60,120],  GOLD_HI  = [28,180,230];
+// Silver (tolerance band — neutral, slightly reflective)
+const SILVER_LO= [0,0,140],    SILVER_HI= [180,25,230];
+
+const COLOR_NAMES  = ['black','brown','red','orange','yellow','green','blue','violet','grey','white','gold','silver'];
+const COLOR_HEX    = { black:'#1a1a1a', brown:'#8B4513', red:'#e53935', orange:'#FF6600', yellow:'#FFD600', green:'#388e3c', blue:'#1565C0', violet:'#6A0DAD', grey:'#9E9E9E', white:'#f0f0f0', gold:'#D4AF37', silver:'#C0C0C0' };
 const COLOR_DIGIT  = { black:0, brown:1, red:2, orange:3, yellow:4, green:5, blue:6, violet:7, grey:8, white:9 };
 const COLOR_MULT   = { black:1, brown:10, red:100, orange:1e3, yellow:1e4, green:1e5, blue:1e6, violet:1e7, grey:1e8, white:1e9, gold:0.1, silver:0.01 };
 const COLOR_TOL    = { brown:'±1%', red:'±2%', green:'±0.5%', blue:'±0.25%', violet:'±0.1%', grey:'±0.05%', gold:'±5%', silver:'±10%' };
@@ -755,14 +780,36 @@ function rgbToHsvCV(r, g, b) {
   return [Math.round(h * 180), Math.round(s * 255), Math.round(v * 255)];
 }
 
-function inRange(h,s,v, lo,hi) {
-  return h>=lo[0]&&h<=hi[0] && s>=lo[1]&&s<=hi[1] && v>=lo[2]&&v<=hi[2];
+function inRange(h, s, v, lo, hi) {
+  return h >= lo[0] && h <= hi[0] && s >= lo[1] && s <= hi[1] && v >= lo[2] && v <= hi[2];
 }
 
-/** Bilateral-style smoothing: box blur 5x1 on the strip */
+/** Is this pixel part of the resistor body (beige/tan)? */
+function isBody(r, g, b) {
+  // Warm neutral: R > G > B, moderate brightness, low-ish saturation
+  const [h, s, v] = rgbToHsvCV(r, g, b);
+  return v > 80 && v < 240 && s > 15 && s < 160 && h >= 8 && h <= 30;
+}
+
+/** Is this pixel background/lead (very dark or metallic neutral)? */
+function isBackground(r, g, b) {
+  const max = Math.max(r, g, b);
+  // Very dark
+  if (max < 45) return true;
+  // Metallic lead: neutral grey, mid brightness
+  const [, s, v] = rgbToHsvCV(r, g, b);
+  if (s < 25 && v > 120 && v < 210) return true;
+  return false;
+}
+
+/**
+ * Box blur — 5-wide horizontal kernel on the strip.
+ * Also does a 3-tall vertical pass for better smoothing.
+ */
 function blurStrip(data, w, h) {
-  const out = new Uint8ClampedArray(data.length);
-  const R = 2; // half-kernel
+  const tmp = new Uint8ClampedArray(data.length);
+  const R = 2;
+  // Horizontal pass
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       let sr=0,sg=0,sb=0,n=0;
@@ -772,6 +819,20 @@ function blurStrip(data, w, h) {
         sr+=data[i]; sg+=data[i+1]; sb+=data[i+2]; n++;
       }
       const i=(y*w+x)*4;
+      tmp[i]=sr/n; tmp[i+1]=sg/n; tmp[i+2]=sb/n; tmp[i+3]=255;
+    }
+  }
+  // Vertical pass (3-tall)
+  const out = new Uint8ClampedArray(data.length);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sr=0,sg=0,sb=0,n=0;
+      for (let dy = -1; dy <= 1; dy++) {
+        const yi = Math.min(Math.max(y+dy,0),h-1);
+        const i = (yi*w+x)*4;
+        sr+=tmp[i]; sg+=tmp[i+1]; sb+=tmp[i+2]; n++;
+      }
+      const i=(y*w+x)*4;
       out[i]=sr/n; out[i+1]=sg/n; out[i+2]=sb/n; out[i+3]=255;
     }
   }
@@ -779,9 +840,57 @@ function blurStrip(data, w, h) {
 }
 
 /**
+ * Find the horizontal extent of the resistor body in the strip.
+ * Returns {left, right} pixel indices, or null if not found.
+ *
+ * Strategy: scan columns. A column "has body" if >30% of its rows
+ * are beige/tan. Find the contiguous run with most body columns.
+ */
+function findBodyBounds(data, w, h) {
+  const bodyCol = new Float32Array(w);
+  for (let x = 0; x < w; x++) {
+    let cnt = 0;
+    for (let y = 0; y < h; y++) {
+      const i=(y*w+x)*4;
+      if (isBody(data[i],data[i+1],data[i+2])) cnt++;
+    }
+    bodyCol[x] = cnt / h;
+  }
+
+  // Smooth the column profile
+  const smooth = new Float32Array(w);
+  for (let x = 0; x < w; x++) {
+    let s=0, n=0;
+    for (let dx=-3;dx<=3;dx++){const xi=Math.min(Math.max(x+dx,0),w-1);s+=bodyCol[xi];n++;}
+    smooth[x]=s/n;
+  }
+
+  const THR = 0.20; // 20% of column must be body-coloured
+  // Find best contiguous run
+  let bestLeft=0, bestRight=w-1, bestLen=0;
+  let runStart=-1;
+  for (let x=0;x<=w;x++) {
+    if (x<w && smooth[x]>=THR) {
+      if (runStart<0) runStart=x;
+    } else {
+      if (runStart>=0) {
+        const len=x-runStart;
+        if (len>bestLen){bestLen=len;bestLeft=runStart;bestRight=x-1;}
+        runStart=-1;
+      }
+    }
+  }
+
+  // Must cover at least 10% of strip width to be valid
+  if (bestLen < w * 0.10) return null;
+
+  // Shrink slightly to avoid body edge gradients being mistaken for bands
+  const pad = Math.round(bestLen * 0.03);
+  return { left: bestLeft + pad, right: bestRight - pad };
+}
+
+/**
  * Extract the scan strip from a video element.
- * Matches original: rows/2 to rows/2+30, cols/2-50 to cols/2+50
- * But we use 80% of width to capture all bands regardless of resistor position.
  */
 function extractStripFromVideo(video) {
   const vw = video.videoWidth, vh = video.videoHeight;
@@ -794,8 +903,8 @@ function extractStripFromVideo(video) {
 
 function extractStripFromCanvas(canvas) {
   const cw = canvas.width, ch = canvas.height;
-  // Strip: center 30px tall, 80% width centered
-  const stripH = Math.max(20, Math.round(ch * 0.06));  // ~30px on typical frames
+  // Strip: centre of frame, ~8% of height (min 24px), 80% width
+  const stripH = Math.max(24, Math.round(ch * 0.08));
   const stripW = Math.round(cw * 0.80);
   const sx = Math.round((cw - stripW) / 2);
   const sy = Math.round(ch / 2) - Math.round(stripH / 2);
@@ -807,105 +916,122 @@ function extractStripFromCanvas(canvas) {
 }
 
 /**
- * Core band detection from a strip ImageData.
- * Returns array of colour name strings, ordered left to right.
+ * Classify a single pixel's RGB into a colour index (0-11) or -1.
  */
-function detectBandsFromStrip(rawData, w, h) {
-  // Step 1: blur (approximate bilateral filter)
-  const data = blurStrip(rawData, w, h);
+function classifyPixel(r, g, b) {
+  const [h, s, v] = rgbToHsvCV(r, g, b);
 
-  // Step 2: Build colour masks — for each pixel decide which colour it is
-  // locationValues: Map<centroidX, colorIndex> (matches SparseIntArray in Java)
-  // areas: Map<centroidX, area>
-  const locationValues = new Map(); // centroidX → colorIndex
-  const areas = new Map();          // centroidX → area
+  // Skip background and leads first
+  if (v < 20) return -1; // pure black
+  if (s < 20 && v > 110 && v < 210) return -1; // metallic grey leads
+
+  // Red wraps
+  if (inRange(h,s,v, RED_LO1,RED_HI1) || inRange(h,s,v, RED_LO2,RED_HI2)) return 2;
+  // Gold (check before yellow/orange because gold overlaps)
+  if (inRange(h,s,v, GOLD_LO,GOLD_HI)) return 10;
+  // Silver
+  if (inRange(h,s,v, SILVER_LO,SILVER_HI)) return 11;
 
   for (let ci = 0; ci < 10; ci++) {
-    // Build binary mask for this colour
-    const mask = new Uint8Array(w * h);
+    if (ci === 2) continue; // red already handled
+    const b = COLOR_BOUNDS[ci];
+    if (b && inRange(h,s,v, b.lo, b.hi)) return ci;
+  }
+  return -1;
+}
+
+/**
+ * Core band detection — returns array of colour name strings left→right.
+ *
+ * Algorithm:
+ * 1. Blur strip
+ * 2. Locate resistor body (beige region) — restricts search area
+ * 3. Within body bounds, classify each pixel
+ * 4. Build per-column colour vote (majority colour in that column)
+ * 5. Find contiguous runs of the same colour
+ * 6. Filter by minimum width (3% of body width)
+ * 7. Merge neighbouring runs of same colour
+ * 8. Return max 6 bands sorted left→right
+ */
+function detectBandsFromStrip(rawData, w, h) {
+  const data = blurStrip(rawData, w, h);
+
+  // Find body bounds
+  const body = findBodyBounds(data, w, h);
+  const bodyLeft  = body ? body.left  : Math.round(w * 0.05);
+  const bodyRight = body ? body.right : Math.round(w * 0.95);
+  const bodyWidth = bodyRight - bodyLeft;
+
+  // Per-column: count votes for each colour index
+  const NUM_COLORS = 12;
+  const colVotes = new Array(w).fill(null).map(() => new Int32Array(NUM_COLORS));
+  const colTotal = new Int32Array(w); // total classified pixels per column
+
+  for (let x = bodyLeft; x <= bodyRight; x++) {
     for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = (y*w+x)*4;
-        const [hv,sv,vv] = rgbToHsvCV(data[i], data[i+1], data[i+2]);
-        let matched = false;
-        if (ci === 2) {
-          // red: two ranges
-          matched = inRange(hv,sv,vv, RED_LO1,RED_HI1) || inRange(hv,sv,vv, RED_LO2,RED_HI2);
-        } else {
-          const b = COLOR_BOUNDS[ci];
-          matched = inRange(hv,sv,vv, b.lo, b.hi);
-        }
-        if (matched) mask[y*w+x] = 1;
-      }
-    }
-
-    // Step 3: Find run-length "contours" (connected horizontal regions)
-    // We project the mask down to a 1D column profile (OR across all rows)
-    // then find runs of consecutive ON pixels
-    const colOn = new Uint8Array(w);
-    for (let x = 0; x < w; x++) {
-      let cnt = 0;
-      for (let y = 0; y < h; y++) cnt += mask[y*w+x];
-      colOn[x] = cnt > 1 ? 1 : 0; // need at least 2 pixels tall to count
-    }
-
-    // Find runs
-    let inRun = false, runStart = 0, runLen = 0;
-    const runs = [];
-    for (let x = 0; x <= w; x++) {
-      if (x < w && colOn[x]) {
-        if (!inRun) { inRun = true; runStart = x; runLen = 0; }
-        runLen++;
-      } else {
-        if (inRun) {
-          runs.push({ start: runStart, len: runLen });
-          inRun = false;
+      const i = (y*w+x)*4;
+      const ci = classifyPixel(data[i], data[i+1], data[i+2]);
+      if (ci >= 0) {
+        // Skip if pixel is body-coloured (that's the resistor body, not a band)
+        if (!isBody(data[i], data[i+1], data[i+2])) {
+          colVotes[x][ci]++;
+          colTotal[x]++;
         }
       }
     }
-
-    // Process runs — matches findLocations logic
-    const MIN_AREA = 20;
-    runs.forEach(run => {
-      // area = total ON pixels within the run
-      let area = 0;
-      for (let x = run.start; x < run.start + run.len; x++) {
-        for (let y = 0; y < h; y++) area += mask[y*w+x];
-      }
-      if (area < MIN_AREA) return;
-
-      // centroid X = weighted mean of x coords
-      let sumX = 0, total = 0;
-      for (let x = run.start; x < run.start + run.len; x++) {
-        let col = 0;
-        for (let y = 0; y < h; y++) col += mask[y*w+x];
-        sumX += x * col; total += col;
-      }
-      const cx = Math.round(total > 0 ? sumX / total : run.start + run.len/2);
-
-      // Merge logic: if another centroid is within 10px, keep the larger one
-      let shouldStore = true;
-      for (const [existCx, existCi] of locationValues) {
-        if (Math.abs(existCx - cx) < 10) {
-          if ((areas.get(existCx) || 0) >= area) {
-            shouldStore = false;
-            break;
-          } else {
-            locationValues.delete(existCx);
-            areas.delete(existCx);
-          }
-        }
-      }
-      if (shouldStore) {
-        locationValues.set(cx, ci);
-        areas.set(cx, area);
-      }
-    });
   }
 
-  // Step 4: Sort by X position → band order left-to-right
-  const sorted = Array.from(locationValues.entries()).sort((a,b) => a[0]-b[0]);
-  return sorted.map(([, ci]) => COLOR_NAMES[ci]);
+  // Per-column dominant colour (must win >35% of classified pixels)
+  const colColor = new Int32Array(w).fill(-1);
+  for (let x = bodyLeft; x <= bodyRight; x++) {
+    if (colTotal[x] < Math.max(2, h * 0.25)) continue; // not enough colour pixels
+    let best = -1, bestV = 0;
+    for (let ci = 0; ci < NUM_COLORS; ci++) {
+      if (colVotes[x][ci] > bestV) { bestV = colVotes[x][ci]; best = ci; }
+    }
+    if (best >= 0 && bestV >= colTotal[x] * 0.35) {
+      colColor[x] = best;
+    }
+  }
+
+  // Find contiguous colour runs within body
+  const runs = [];
+  let curColor = -1, runStart = -1;
+  for (let x = bodyLeft; x <= bodyRight + 1; x++) {
+    const c = x <= bodyRight ? colColor[x] : -1;
+    if (c === curColor && c >= 0) continue;
+    if (curColor >= 0 && runStart >= 0) {
+      runs.push({ color: curColor, start: runStart, end: x - 1, len: x - runStart });
+    }
+    curColor = c; runStart = x;
+  }
+
+  // Minimum band width: 3% of body width (avoids noise spikes)
+  const MIN_W = Math.max(3, bodyWidth * 0.03);
+  const significant = runs.filter(r => r.len >= MIN_W);
+
+  // Merge adjacent same-colour runs separated by a tiny gap (<= 4px)
+  const merged = [];
+  significant.forEach(r => {
+    if (merged.length > 0) {
+      const prev = merged[merged.length - 1];
+      if (prev.color === r.color && r.start - prev.end <= 4) {
+        prev.end = r.end; prev.len = prev.end - prev.start + 1; return;
+      }
+    }
+    merged.push({...r});
+  });
+
+  // Sort by start position
+  merged.sort((a, b) => a.start - b.start);
+
+  // Cap at 6 bands max — if more, keep widest ones (highest confidence)
+  let final = merged;
+  if (final.length > 6) {
+    final = [...merged].sort((a,b) => b.len - a.len).slice(0, 6).sort((a,b) => a.start - b.start);
+  }
+
+  return final.map(r => COLOR_NAMES[r.color]);
 }
 
 /** Format resistance value (Ohm/K/M) */
@@ -964,7 +1090,7 @@ function processResistorCanvas(canvas, previewSrc) {
   showDebugStrip(strip);
 
   const bands = detectBandsFromStrip(strip.data, strip.width, strip.height);
-  showDebugHsv(strip.data, strip.width, strip.height, bands);
+  showDebugHsv(strip.data, strip.width, strip.height);
 
   renderResistorResult(bands, previewSrc, c);
 }
@@ -977,33 +1103,49 @@ function showDebugStrip(strip) {
   document.getElementById('debugStrip').classList.add('on');
 }
 
-/** Show HSV-classified version of the strip */
-function showDebugHsv(rawData, w, h, foundBands) {
+/** Show HSV-classified version of the strip, with body bounds overlay */
+function showDebugHsv(rawData, w, h) {
   const dc = document.getElementById('debugHsvCanvas');
   dc.width = w; dc.height = h;
   const ctx = dc.getContext('2d');
   const img = ctx.createImageData(w, h);
   const blurred = blurStrip(rawData, w, h);
 
+  // Find body bounds for overlay
+  const body = findBodyBounds(blurred, w, h);
+
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i=(y*w+x)*4;
-      const [hv,sv,vv]=rgbToHsvCV(blurred[i],blurred[i+1],blurred[i+2]);
-      let matched = -1;
-      for (let ci=0;ci<10;ci++) {
-        if(ci===2){ if(inRange(hv,sv,vv,RED_LO1,RED_HI1)||inRange(hv,sv,vv,RED_LO2,RED_HI2)){matched=ci;break;} }
-        else if(COLOR_BOUNDS[ci] && inRange(hv,sv,vv,COLOR_BOUNDS[ci].lo,COLOR_BOUNDS[ci].hi)){matched=ci;break;}
-      }
-      if (matched>=0) {
-        const hex=COLOR_HEX[COLOR_NAMES[matched]];
-        const [r2,g2,b2]=hexToRgb(hex);
-        img.data[i]=r2;img.data[i+1]=g2;img.data[i+2]=b2;img.data[i+3]=255;
+      const r=blurred[i],g=blurred[i+1],b=blurred[i+2];
+      let r2=20,g2=25,b2=30;
+
+      // Outside body: dim
+      if (body && (x < body.left || x > body.right)) {
+        r2=12; g2=15; b2=18;
+      } else if (isBody(r,g,b)) {
+        // body pixel: show as beige
+        r2=180; g2=140; b2=80;
       } else {
-        img.data[i]=20;img.data[i+1]=25;img.data[i+2]=30;img.data[i+3]=255;
+        const ci = classifyPixel(r,g,b);
+        if (ci>=0) {
+          const hex=COLOR_HEX[COLOR_NAMES[ci]];
+          const rgb=hexToRgb(hex);
+          r2=rgb[0]; g2=rgb[1]; b2=rgb[2];
+        }
       }
+      img.data[i]=r2; img.data[i+1]=g2; img.data[i+2]=b2; img.data[i+3]=255;
     }
   }
   ctx.putImageData(img,0,0);
+
+  // Draw body bounds markers
+  if (body) {
+    ctx.strokeStyle='rgba(0,255,157,0.8)';
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(body.left,0); ctx.lineTo(body.left,h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(body.right,0); ctx.lineTo(body.right,h); ctx.stroke();
+  }
 }
 
 function hexToRgb(hex) {
