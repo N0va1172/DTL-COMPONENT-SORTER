@@ -796,9 +796,6 @@ function renderRoboflowResult(bandColors, result, previewSrc, sortedPreds, rfDat
     </div>`;
   }).join('');
 
-  // Draw annotated preview
-  const annotatedImg = annotateResistorImage(previewSrc, sortedPreds, rfData);
-
   body.innerHTML = `
     <div class="res-result">
       <div class="res-value-row">
