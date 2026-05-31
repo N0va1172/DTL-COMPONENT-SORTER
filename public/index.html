@@ -973,7 +973,7 @@ function showError(msg) {
 }
 
 function renderDetectionResults(data) {
-  const preds = data.predictions || [];
+  const preds = (data.predictions || []).filter(p => p.confidence >= 0.75);
   const section = document.getElementById('resultsSection');
   const grid = document.getElementById('compGrid');
   const tbody = document.getElementById('summaryBody');
