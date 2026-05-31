@@ -955,8 +955,9 @@ async function runDetection() {
     });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error || 'Detection failed');
-    renderDetectionResults(data);
-    drawBboxes(data.predictions || []);
+    const filtered = (data.predictions || []).filter(p => p.confidence >= 0.50);
+    renderDetectionResults({...data, predictions: filtered});
+    drawBboxes(filtered);
   } catch (err) {
     showError(err.message);
   } finally {
@@ -973,7 +974,7 @@ function showError(msg) {
 }
 
 function renderDetectionResults(data) {
-  const preds = (data.predictions || []).filter(p => p.confidence >= 0.75);
+  const preds = (data.predictions || []).filter(p => p.confidence >= 0.60);
   const section = document.getElementById('resultsSection');
   const grid = document.getElementById('compGrid');
   const tbody = document.getElementById('summaryBody');
