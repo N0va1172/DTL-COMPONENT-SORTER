@@ -380,26 +380,10 @@ tr:last-child td { border-bottom: none; }
     <div class="instructions">
       <strong>AI-powered band reading</strong>
       <div class="inst-steps">
-        <div class="inst-step"><span class="inst-num">1</span><span>Enter your <strong>Anthropic API key</strong> below</span></div>
+        <div class="inst-step"><span class="inst-num">1</span><span>Enter your <strong>Roboflow API key</strong> in the Component Detect panel (shared)</span></div>
         <div class="inst-step"><span class="inst-num">2</span><span>Tap <strong>Start Camera</strong> — hold the resistor <strong>anywhere in view</strong>, no need to be precise</span></div>
         <div class="inst-step"><span class="inst-num">3</span><span>Tap <strong>Snap &amp; Read</strong> — Claude AI will identify the bands</span></div>
         <div class="inst-step"><span class="inst-num">4</span><span>Or <strong>upload a photo</strong> directly — works great with close-up shots</span></div>
-      </div>
-    </div>
-
-    <!-- Anthropic API Key for Vision -->
-    <div class="card">
-      <div class="card-header"><div class="card-label green">Anthropic API Key</div></div>
-      <div class="card-body">
-        <div class="field-group">
-          <div class="field-label">API Key</div>
-          <div class="field-row">
-            <input class="field-input" id="anthropicKey" type="password" placeholder="sk-ant-xxxxxxxxxxxxxxxx" autocomplete="off">
-          </div>
-          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.2rem">
-            Used for AI band detection. Get yours at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent2);text-decoration:none">console.anthropic.com</a>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -679,85 +663,67 @@ function handleResistorFile(e) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   AI VISION — Claude API reads the colour bands
+   ROBOFLOW MODEL — resistor-value-training/7
+   Sends base64 image to serverless Roboflow inference.
+   Response: { predictions: [{class, confidence, x, y, width, height}] }
+   Each prediction class = a colour band name, sorted left→right by X.
 ═══════════════════════════════════════════════════════════════ */
 async function processResistorImage(dataUrl) {
-  const apiKey = document.getElementById('anthropicKey').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
   if (!apiKey) {
     document.getElementById('resResultBody').innerHTML = `
       <div class="res-placeholder" style="color:var(--danger)">
-        Please enter your <strong style="color:var(--accent2)">Anthropic API key</strong> above to use AI band detection.
+        Please enter your <strong style="color:var(--accent2)">Roboflow API key</strong> in the
+        <strong>Component Detect</strong> panel above to use band detection.
       </div>`;
     return;
   }
 
-  // Show thinking animation
   document.getElementById('resResultBody').innerHTML = `
     <div class="ai-thinking">
       <div class="ai-dots"><span></span><span></span><span></span></div>
-      <span>Claude is reading the colour bands…</span>
+      <span>Roboflow is reading the colour bands…</span>
     </div>`;
 
-  // Extract base64 from data URL
   const base64 = dataUrl.split(',')[1];
-  const mediaType = dataUrl.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
-
-  const systemPrompt = `You are an expert electronics engineer specialising in reading resistor colour codes.
-When given an image of a resistor, identify the colour bands and calculate the resistance value.
-
-Respond ONLY with a valid JSON object — no markdown, no explanation, just the JSON.
-
-JSON format:
-{
-  "bands": ["colour1", "colour2", ...],
-  "bandCount": 3 or 4 or 5,
-  "resistance": "22 KΩ",
-  "tolerance": "±5%",
-  "type": "4-band",
-  "notes": "optional short note if image is unclear"
-}
-
-Colour names must be lowercase: black, brown, red, orange, yellow, green, blue, violet, grey, white, gold, silver.
-Resistance must be formatted as: e.g. "220 Ω", "4.7 KΩ", "1 MΩ".
-If you cannot determine the value clearly, set resistance to null and add a notes field.`;
-
-  const userPrompt = `Read the resistor colour bands in this image and return the JSON with the resistance value.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
-        system: systemPrompt,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: userPrompt }
-          ]
-        }]
-      })
-    });
+    const resp = await fetch(
+      `https://serverless.roboflow.com/resistor-value-training/7?api_key=${encodeURIComponent(apiKey)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: base64
+      }
+    );
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message || `API error ${response.status}`);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.message || `Roboflow API error ${resp.status}`);
     }
 
-    const data = await response.json();
-    const rawText = data.content.map(b => b.text || '').join('').trim();
+    const data = await resp.json();
+    const preds = (data.predictions || []);
 
-    let result;
-    try {
-      const clean = rawText.replace(/```json|```/g, '').trim();
-      result = JSON.parse(clean);
-    } catch(e) {
-      throw new Error('Could not parse AI response. Raw: ' + rawText.slice(0, 120));
+    if (preds.length === 0) {
+      document.getElementById('resResultBody').innerHTML = `
+        <div class="res-placeholder">
+          <p>No colour bands detected.</p>
+          <p style="margin-top:0.5rem;font-size:0.72rem">Tips: ensure <strong>good lighting</strong>,
+          hold the resistor <strong>horizontally</strong>, try <strong>Flash</strong>,
+          or upload a close-up photo.</p>
+        </div>
+        <img src="${dataUrl}" style="width:100%;border-radius:7px;border:1px solid var(--border);max-height:180px;object-fit:contain;background:#000;margin-top:0.5rem">`;
+      return;
     }
 
-    renderAiResistorResult(result, dataUrl);
+    // Sort bands left → right by X centroid
+    const sorted = [...preds].sort((a, b) => a.x - b.x);
+    const bandColors = sorted.map(p => p.class.toLowerCase().trim());
+
+    // Compute resistance from bands
+    const result = computeResistance(bandColors);
+    renderRoboflowResult(bandColors, result, dataUrl, sorted, data);
 
   } catch(err) {
     document.getElementById('resResultBody').innerHTML = `
@@ -766,6 +732,130 @@ If you cannot determine the value clearly, set resistance to null and add a note
         <span style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;display:block">Check your API key and try again.</span>
       </div>`;
   }
+}
+
+/* ─── Resistance decoder (unchanged logic) ─── */
+const COLOR_DIGIT = { black:0, brown:1, red:2, orange:3, yellow:4, green:5, blue:6, violet:7, grey:8, white:9 };
+const COLOR_MULT  = { black:1, brown:10, red:100, orange:1e3, yellow:1e4, green:1e5, blue:1e6, violet:1e7, grey:1e8, white:1e9, gold:0.1, silver:0.01 };
+const COLOR_TOL   = { brown:'±1%', red:'±2%', green:'±0.5%', blue:'±0.25%', violet:'±0.1%', grey:'±0.05%', gold:'±5%', silver:'±10%' };
+
+function formatOhms(val) {
+  if (val >= 1e6) return (val/1e6).toFixed(val%1e6===0?0:2) + ' MΩ';
+  if (val >= 1e3) return (val/1e3).toFixed(val%1e3===0?0:2) + ' KΩ';
+  return val.toFixed(0) + ' Ω';
+}
+
+function computeResistance(bands) {
+  if (bands.length >= 5) {
+    const [d1,d2,d3,mult,tol] = bands;
+    if (COLOR_DIGIT[d1]!=null && COLOR_DIGIT[d2]!=null && COLOR_DIGIT[d3]!=null && COLOR_MULT[mult]!=null) {
+      const val = (COLOR_DIGIT[d1]*100 + COLOR_DIGIT[d2]*10 + COLOR_DIGIT[d3]) * COLOR_MULT[mult];
+      return { type:'5-band', value:formatOhms(val), tolerance:COLOR_TOL[tol]||'±1%', bands:bands.slice(0,5) };
+    }
+  }
+  if (bands.length >= 4) {
+    const [d1,d2,mult,tol] = bands;
+    if (COLOR_DIGIT[d1]!=null && COLOR_DIGIT[d2]!=null && COLOR_MULT[mult]!=null) {
+      const val = (COLOR_DIGIT[d1]*10 + COLOR_DIGIT[d2]) * COLOR_MULT[mult];
+      return { type:'4-band', value:formatOhms(val), tolerance:COLOR_TOL[tol]||'±20%', bands:bands.slice(0,4) };
+    }
+  }
+  if (bands.length >= 3) {
+    const [d1,d2,mult] = bands;
+    if (COLOR_DIGIT[d1]!=null && COLOR_DIGIT[d2]!=null && COLOR_MULT[mult]!=null) {
+      const val = (COLOR_DIGIT[d1]*10 + COLOR_DIGIT[d2]) * COLOR_MULT[mult];
+      return { type:'3-band', value:formatOhms(val), tolerance:'±20%', bands:bands.slice(0,3) };
+    }
+  }
+  return null;
+}
+
+function renderRoboflowResult(bandColors, result, previewSrc, sortedPreds, rfData) {
+  const body = document.getElementById('resResultBody');
+
+  if (!result) {
+    body.innerHTML = `
+      <div class="res-placeholder">
+        <p>Bands detected: <strong>${bandColors.join(' → ')}</strong></p>
+        <p style="margin-top:0.5rem;font-size:0.72rem">Could not decode a valid resistance. The model may have detected an unexpected combination — try a clearer photo or different angle.</p>
+      </div>
+      <img src="${previewSrc}" style="width:100%;border-radius:7px;border:1px solid var(--border);max-height:180px;object-fit:contain;background:#000;margin-top:0.5rem">`;
+    return;
+  }
+
+  const labelMap = { '3-band':['D1','D2','×'], '4-band':['D1','D2','×','Tol'], '5-band':['D1','D2','D3','×','Tol'] };
+  const labels = labelMap[result.type] || result.bands.map((_,i) => `B${i+1}`);
+
+  const bandsHtml = result.bands.map((b, i) => {
+    const hex = COLOR_HEX[b] || '#888';
+    const bdr = b === 'white' ? '1px solid #ccc' : '1px solid rgba(255,255,255,0.1)';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:22px;height:44px;border-radius:3px;background:${hex};border:${bdr}"></div>
+      <span style="font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--muted)">${labels[i]||''}</span>
+      <span style="font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--text);text-transform:capitalize">${b}</span>
+    </div>`;
+  }).join('');
+
+  // Draw annotated preview
+  const annotatedImg = annotateResistorImage(previewSrc, sortedPreds, rfData);
+
+  body.innerHTML = `
+    <div class="res-result">
+      <div class="res-value-row">
+        <div class="res-value">${escHtml(result.value)}</div>
+        <div class="res-tol">${escHtml(result.tolerance)}</div>
+        <div class="res-type">${escHtml(result.type)}</div>
+        <div class="res-type" style="background:rgba(0,255,157,0.08);border-color:rgba(0,255,157,0.3);color:var(--accent2)">Roboflow</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:flex-end;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:10px 14px 24px;margin-top:0.5rem;position:relative">
+        ${bandsHtml}
+        <div style="position:absolute;bottom:5px;left:14px;font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted)">COLOUR BANDS</div>
+      </div>
+    </div>
+    <canvas id="annotatedCanvas" style="width:100%;border-radius:7px;border:1px solid var(--border);margin-top:0.5rem;max-height:220px;object-fit:contain;display:block"></canvas>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem">
+      All bands: ${bandColors.join(' → ')} (${bandColors.length} detected)
+    </div>`;
+
+  // Draw annotations after DOM insert
+  requestAnimationFrame(() => annotateResistorCanvas(previewSrc, sortedPreds, rfData));
+}
+
+function annotateResistorCanvas(previewSrc, preds, rfData) {
+  const canvas = document.getElementById('annotatedCanvas');
+  if (!canvas) return;
+  const img = new Image();
+  img.onload = () => {
+    const maxW = canvas.offsetWidth || 400;
+    const scale = maxW / img.width;
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const imgW = rfData.image?.width || img.width;
+    const imgH = rfData.image?.height || img.height;
+    const sx = canvas.width / imgW;
+    const sy = canvas.height / imgH;
+    preds.forEach((p, i) => {
+      const x = (p.x - p.width/2) * sx;
+      const y = (p.y - p.height/2) * sy;
+      const w = p.width * sx;
+      const h = p.height * sy;
+      const hex = COLOR_HEX[p.class.toLowerCase()] || '#00ff9d';
+      ctx.strokeStyle = hex;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+      // Label background
+      const label = `${i+1}:${p.class}`;
+      ctx.font = 'bold 10px Space Mono,monospace';
+      const tw = ctx.measureText(label).width + 6;
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(x, y - 16, tw, 16);
+      ctx.fillStyle = hex;
+      ctx.fillText(label, x + 3, y - 4);
+    });
+  };
+  img.src = previewSrc;
 }
 
 function escHtml(s) {
@@ -778,56 +868,6 @@ const COLOR_HEX = {
   grey:'#9E9E9E', white:'#f0f0f0', gold:'#D4AF37', silver:'#C0C0C0'
 };
 
-function renderAiResistorResult(result, previewSrc) {
-  const body = document.getElementById('resResultBody');
-  const bands = result.bands || [];
-
-  if (!result.resistance || bands.length < 2) {
-    body.innerHTML = `
-      <div class="res-placeholder">
-        <p>Claude could not read the bands clearly.</p>
-        ${result.notes ? `<p style="margin-top:0.5rem;font-size:0.78rem;color:var(--warn)">${escHtml(result.notes)}</p>` : ''}
-        <p style="margin-top:0.75rem;font-size:0.72rem">Tips: ensure <strong>good lighting</strong>, hold resistor <strong>horizontally</strong>, try using <strong>Flash</strong> for dark environments, or upload a close-up photo.</p>
-        ${bands.length > 0 ? `<p style="margin-top:0.5rem;font-size:0.7rem;color:var(--muted)">Partial bands seen: ${bands.join(', ')}</p>` : ''}
-      </div>
-      ${previewSrc ? `<img src="${previewSrc}" style="width:100%;border-radius:7px;border:1px solid var(--border);max-height:180px;object-fit:contain;background:#000;margin-top:0.5rem" alt="Captured frame">` : ''}`;
-    return;
-  }
-
-  // Band label maps
-  const labelMap = { '3-band':['D1','D2','×'], '4-band':['D1','D2','×','Tol'], '5-band':['D1','D2','D3','×','Tol'] };
-  const labels = labelMap[result.type] || bands.map((_,i) => `B${i+1}`);
-
-  const bandsHtml = bands.map((b, i) => {
-    const hex = COLOR_HEX[b] || '#888';
-    const bdr = b === 'white' ? '1px solid #ccc' : '1px solid rgba(255,255,255,0.1)';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div style="width:22px;height:44px;border-radius:3px;background:${hex};border:${bdr}"></div>
-      <span style="font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--muted)">${labels[i]||''}</span>
-      <span style="font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--text);text-transform:capitalize">${b}</span>
-    </div>`;
-  }).join('');
-
-  body.innerHTML = `
-    <div class="res-result">
-      <div class="res-value-row">
-        <div class="res-value">${escHtml(result.resistance)}</div>
-        ${result.tolerance ? `<div class="res-tol">${escHtml(result.tolerance)}</div>` : ''}
-        ${result.type ? `<div class="res-type">${escHtml(result.type)}</div>` : ''}
-        <div class="res-type" style="background:rgba(0,255,157,0.08);border-color:rgba(0,255,157,0.3);color:var(--accent2)">AI Read</div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:flex-end;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:10px 14px 24px;margin-top:0.5rem;position:relative">
-        ${bandsHtml}
-        <div style="position:absolute;bottom:5px;left:14px;font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted)">COLOUR BANDS</div>
-      </div>
-      ${result.notes ? `<div style="font-size:0.72rem;color:var(--warn);margin-top:0.25rem">⚠ ${escHtml(result.notes)}</div>` : ''}
-    </div>
-    ${previewSrc ? `<img src="${previewSrc}" style="width:100%;border-radius:7px;border:1px solid var(--border);margin-top:0.5rem;max-height:200px;object-fit:contain;background:#000" alt="Captured frame">` : ''}
-    <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem">
-      Bands detected: ${bands.join(' → ')}
-    </div>`;
-}
-
 /* ═══════════════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════════════ */
@@ -835,10 +875,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const saved = sessionStorage.getItem('ec_apikey');
   if (saved) document.getElementById('apiKey').value = saved;
   document.getElementById('apiKey').addEventListener('input', e => sessionStorage.setItem('ec_apikey', e.target.value));
-
-  const savedAnth = sessionStorage.getItem('ec_anthkey');
-  if (savedAnth) document.getElementById('anthropicKey').value = savedAnth;
-  document.getElementById('anthropicKey').addEventListener('input', e => sessionStorage.setItem('ec_anthkey', e.target.value));
 });
 </script>
 </body>
