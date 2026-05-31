@@ -33,7 +33,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Grid background ─── */
 body::before {
   content: '';
   position: fixed;
@@ -46,7 +45,6 @@ body::before {
   z-index: 0;
 }
 
-/* ─── Header ─── */
 header {
   position: relative;
   z-index: 10;
@@ -58,41 +56,11 @@ header {
   margin: 0 auto;
 }
 
-.logo {
-  font-family: 'Space Mono', monospace;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-.logo em {
-  color: var(--accent2);
-  font-style: normal;
-}
-.logo-sub {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-top: 2px;
-}
-.version-pill {
-  margin-left: auto;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 0.25rem 0.65rem;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+.logo { font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: -0.02em; white-space: nowrap; }
+.logo em { color: var(--accent2); font-style: normal; }
+.logo-sub { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px; }
+.version-pill { margin-left: auto; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 0.25rem 0.65rem; font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 
-/* ─── Main container ─── */
 main {
   position: relative;
   z-index: 10;
@@ -104,33 +72,10 @@ main {
   gap: 1rem;
 }
 
-/* ─── Mode selector ─── */
-.mode-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
+.mode-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
-.mode-card {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 1.25rem 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-.mode-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
+.mode-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 1.25rem 1rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.5rem; position: relative; overflow: hidden; }
+.mode-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s; }
 .mode-card.detect::before { background: radial-gradient(circle at top left, rgba(0,212,255,0.08), transparent 60%); }
 .mode-card.resistor::before { background: radial-gradient(circle at top left, rgba(0,255,157,0.08), transparent 60%); }
 .mode-card:hover { transform: translateY(-1px); }
@@ -139,343 +84,111 @@ main {
 .mode-card.active.resistor { border-color: var(--accent2); box-shadow: 0 0 20px rgba(0,255,157,0.1); }
 .mode-card.active::before { opacity: 1; }
 
-.mode-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.25rem;
-}
+.mode-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.25rem; }
 .mode-icon.cyan { background: rgba(0,212,255,0.12); }
 .mode-icon.green { background: rgba(0,255,157,0.12); }
 .mode-icon svg { width: 20px; height: 20px; }
-
-.mode-title {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text);
-}
-.mode-desc {
-  font-size: 0.72rem;
-  color: var(--muted);
-  line-height: 1.4;
-}
-.mode-active-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  position: absolute; top: 10px; right: 10px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
+.mode-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.mode-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+.mode-active-dot { width: 6px; height: 6px; border-radius: 50%; position: absolute; top: 10px; right: 10px; opacity: 0; transition: opacity 0.2s; }
 .mode-card.active.detect .mode-active-dot { background: var(--accent); opacity: 1; }
 .mode-card.active.resistor .mode-active-dot { background: var(--accent2); opacity: 1; }
 
-/* ─── Panels ─── */
 .panel { display: none; flex-direction: column; gap: 0.9rem; animation: fadeIn 0.2s ease; }
 .panel.active { display: flex; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* ─── Card container ─── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.card-header {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--surface2);
-}
-.card-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.card-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; background: var(--surface2); }
+.card-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 .card-label.cyan { color: var(--accent); }
 .card-label.green { color: var(--accent2); }
 .card-body { padding: 1rem; }
 
-/* ─── API Key input ─── */
 .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .field-label { font-size: 0.72rem; color: var(--muted); font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; }
 .field-row { display: flex; gap: 0.5rem; }
-.field-input {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 7px;
-  padding: 0.6rem 0.85rem;
-  color: var(--text);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.75rem;
-  outline: none;
-  transition: border-color 0.15s;
-}
+.field-input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: 7px; padding: 0.6rem 0.85rem; color: var(--text); font-family: 'Space Mono', monospace; font-size: 0.75rem; outline: none; transition: border-color 0.15s; }
 .field-input:focus { border-color: var(--accent); }
 .field-input::placeholder { color: var(--muted); }
 
-/* ─── Upload zone ─── */
-.upload-zone {
-  background: var(--surface2);
-  border: 1.5px dashed var(--border2);
-  border-radius: 10px;
-  padding: 2rem 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-}
+.upload-zone { background: var(--surface2); border: 1.5px dashed var(--border2); border-radius: 10px; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; cursor: pointer; transition: all 0.2s; text-align: center; }
 .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(0,212,255,0.04); }
 .upload-zone svg { width: 32px; height: 32px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
 .upload-zone:hover svg { stroke: var(--accent); }
 .upload-text { font-size: 0.82rem; color: var(--muted); }
 .upload-text strong { color: var(--text); font-weight: 500; }
-.btn-upload {
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 500;
-  padding: 0.45rem 1.1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
+.btn-upload { background: transparent; border: 1px solid var(--accent); color: var(--accent); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.78rem; font-weight: 500; padding: 0.45rem 1.1rem; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
 .btn-upload:hover { background: var(--glow); }
 #fileInput { display: none; }
 
-/* ─── Image preview ─── */
 .preview-wrap { display: none; }
 .preview-wrap.on { display: block; }
-#previewCanvas {
-  width: 100%; border-radius: 8px; display: block;
-  border: 1px solid var(--border);
-}
+#previewCanvas { width: 100%; border-radius: 8px; display: block; border: 1px solid var(--border); }
 
-/* ─── Analyze button ─── */
-.btn-analyze {
-  width: 100%;
-  background: var(--accent);
-  color: #000;
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.85rem;
-  border: none;
-  border-radius: 9px;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: opacity 0.15s, transform 0.1s;
-}
+.btn-analyze { width: 100%; background: var(--accent); color: #000; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 0.95rem; padding: 0.85rem; border: none; border-radius: 9px; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 0.5rem; transition: opacity 0.15s, transform 0.1s; }
 .btn-analyze:hover { opacity: 0.88; transform: translateY(-1px); }
 .btn-analyze:active { transform: none; }
 .btn-analyze.on { display: flex; }
 .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.btn-analyze .spin {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(0,0,0,0.3);
-  border-top-color: #000;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  display: none;
-}
+.btn-analyze .spin { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
 .btn-analyze.loading .spin { display: block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Results ─── */
 .results { display: none; flex-direction: column; gap: 0.75rem; }
 .results.on { display: flex; }
-
-.results-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.1rem;
-}
-.results-title {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.count-tag {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  padding: 0.15rem 0.6rem;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--muted);
-}
-
-.comp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 0.6rem;
-}
-.comp-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  transition: border-color 0.15s;
-}
+.results-bar { display: flex; align-items: center; justify-content: space-between; padding: 0 0.1rem; }
+.results-title { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; }
+.count-tag { background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 0.15rem 0.6rem; font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); }
+.comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.6rem; }
+.comp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; transition: border-color 0.15s; }
 .comp-card:hover { border-color: var(--border2); }
-.comp-name {
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: capitalize;
-  color: var(--text);
-}
+.comp-name { font-weight: 600; font-size: 0.85rem; text-transform: capitalize; color: var(--text); }
 .conf-row { display: flex; align-items: center; gap: 0.4rem; }
 .conf-bar-bg { flex: 1; height: 3px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
 .conf-bar-fill { height: 100%; border-radius: 2px; }
 .conf-num { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); min-width: 32px; text-align: right; }
 .card-actions { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.3rem; }
-.act-btn {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--muted);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 0.3rem 0.55rem;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  transition: all 0.15s;
-  width: 100%;
-  text-align: left;
-}
+.act-btn { background: transparent; border: 1px solid var(--border2); color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.7rem; font-weight: 500; padding: 0.3rem 0.55rem; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; transition: all 0.15s; width: 100%; text-align: left; }
 .act-btn:hover { border-color: var(--accent); color: var(--accent); }
 .act-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
-
 .no-result { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; }
-.error-box {
-  background: rgba(255,71,87,0.07);
-  border: 1px solid rgba(255,71,87,0.3);
-  border-radius: 9px;
-  padding: 0.9rem 1rem;
-  font-size: 0.82rem;
-  color: #ff8080;
-  display: none;
-}
+.error-box { background: rgba(255,71,87,0.07); border: 1px solid rgba(255,71,87,0.3); border-radius: 9px; padding: 0.9rem 1rem; font-size: 0.82rem; color: #ff8080; display: none; }
 .error-box.on { display: block; }
-
-/* ─── Summary table ─── */
-.summary-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  overflow: hidden;
-}
-.summary-head {
-  padding: 0.55rem 0.85rem;
-  background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.summary-head { padding: 0.55rem 0.85rem; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
 table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 th { text-align: left; padding: 0.4rem 0.85rem; color: var(--muted); font-weight: 400; font-size: 0.7rem; border-bottom: 1px solid var(--border); }
 td { padding: 0.5rem 0.85rem; border-bottom: 1px solid rgba(30,45,61,0.5); }
 tr:last-child td { border-bottom: none; }
-.pill {
-  display: inline-block; padding: 0.12rem 0.45rem; border-radius: 20px;
-  font-family: 'Space Mono', monospace; font-size: 0.6rem;
-}
+.pill { display: inline-block; padding: 0.12rem 0.45rem; border-radius: 20px; font-family: 'Space Mono', monospace; font-size: 0.6rem; }
 .pill.hi { background: rgba(0,212,255,0.1); color: var(--accent); }
 .pill.mid { background: rgba(255,165,2,0.1); color: var(--warn); }
 .pill.lo { background: rgba(255,71,87,0.1); color: var(--danger); }
 
-/* ═══════════════════════════════════════════════════════════
-   RESISTOR SCANNER
-═══════════════════════════════════════════════════════════ */
+/* ═══════ RESISTOR SCANNER ═══════ */
 
-/* Camera view */
-.camera-wrap {
-  position: relative;
-  background: #000;
-  border-radius: 10px;
-  overflow: hidden;
-  aspect-ratio: 4/3;
-}
-#resistorVideo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-#resistorCanvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.camera-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: rgba(8,11,15,0.7);
-}
+.camera-wrap { position: relative; background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; }
+#resistorVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+#resistorCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.camera-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; background: rgba(8,11,15,0.7); }
 .camera-overlay svg { width: 40px; height: 40px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
 .camera-overlay p { font-size: 0.82rem; color: var(--muted); text-align: center; padding: 0 1.5rem; }
 .camera-overlay.hidden { display: none; }
 
-/* Scanning line on camera */
-.scan-line {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 2px;
-  background: rgba(0,255,157,0.5);
-  box-shadow: 0 0 8px rgba(0,255,157,0.5);
-  pointer-events: none;
-  display: none;
-}
-.scan-line.on { display: block; }
-
-/* Scan target box */
+/* Scan target box — shows the EXACT strip the algorithm will sample */
 .scan-target {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 70%;
-  height: 30px;
-  border: 1.5px solid rgba(0,255,157,0.5);
+  width: 80%;
+  height: 32px;
+  border: 1.5px solid rgba(0,255,157,0.8);
   border-radius: 3px;
   pointer-events: none;
   display: none;
+  box-shadow: 0 0 12px rgba(0,255,157,0.25);
 }
 .scan-target.on { display: block; }
 .scan-target::before, .scan-target::after {
@@ -488,29 +201,19 @@ tr:last-child td { border-bottom: none; }
 .scan-target::before { top: -1.5px; left: -1.5px; border-width: 2px 0 0 2px; border-radius: 2px 0 0 0; }
 .scan-target::after { bottom: -1.5px; right: -1.5px; border-width: 0 2px 2px 0; border-radius: 0 0 2px 0; }
 
-/* Camera controls */
-.cam-controls {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  align-items: center;
+/* Center crosshair line inside the box */
+.scan-line-inner {
+  position: absolute;
+  left: 4px; right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1px;
+  background: rgba(0,255,157,0.4);
+  pointer-events: none;
 }
-.btn-cam {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 0.55rem 1rem;
-  border-radius: 7px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
+
+.cam-controls { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+.btn-cam { background: transparent; border: 1px solid var(--border2); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.8rem; font-weight: 500; padding: 0.55rem 1rem; border-radius: 7px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.15s; white-space: nowrap; }
 .btn-cam svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 .btn-cam:hover { border-color: var(--accent); color: var(--accent); }
 .btn-cam.start { background: var(--accent2); color: #000; border-color: var(--accent2); font-weight: 600; }
@@ -518,169 +221,66 @@ tr:last-child td { border-bottom: none; }
 .btn-cam.stop { border-color: var(--danger); color: var(--danger); }
 .btn-cam.stop:hover { background: rgba(255,71,87,0.08); }
 .btn-cam:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
-.live-tag {
-  margin-left: auto;
-  display: none;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--danger);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+.live-tag { margin-left: auto; display: none; align-items: center; gap: 0.35rem; font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--danger); text-transform: uppercase; letter-spacing: 0.06em; }
 .live-tag.on { display: flex; }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-/* Result display for resistor */
-.res-result {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.res-value-row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.res-value {
-  font-family: 'Space Mono', monospace;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--accent2);
-  line-height: 1;
-}
-.res-tol {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-.res-type {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.62rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: var(--surface3);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  padding: 0.15rem 0.4rem;
-}
-
-.bands-row {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.band-chip {
-  width: 28px; height: 48px;
-  border-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.08);
-  flex-shrink: 0;
-  position: relative;
-}
-.band-chip-label {
+/* Live band preview overlay on camera */
+.live-bands-overlay {
   position: absolute;
-  bottom: -18px;
+  bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.55rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.bands-wrap {
-  display: flex;
+  display: none;
   gap: 3px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px 24px;
-  position: relative;
-}
-
-.res-placeholder {
-  text-align: center;
-  padding: 1.5rem;
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.6;
-}
-.res-placeholder code {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--accent2);
-}
-
-/* Snap photo mode */
-.snap-row {
-  display: flex;
-  gap: 0.6rem;
-  align-items: center;
-}
-.btn-snap {
-  flex: 1;
-  background: var(--surface3);
+  background: rgba(8,11,15,0.75);
   border: 1px solid var(--border2);
-  color: var(--text);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 0.65rem;
-  border-radius: 7px;
-  cursor: pointer;
-  display: flex;
+  border-radius: 6px;
+  padding: 4px 8px;
   align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  transition: all 0.15s;
 }
+.live-bands-overlay.on { display: flex; }
+.lbo-swatch { width: 14px; height: 22px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); }
+.lbo-label { font-family: 'Space Mono', monospace; font-size: 0.55rem; color: var(--muted); margin-left: 3px; }
+.lbo-sep { width: 1px; height: 16px; background: var(--border2); margin: 0 2px; }
+
+.res-result { background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.res-value-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.res-value { font-family: 'Space Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--accent2); line-height: 1; }
+.res-tol { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+.res-type { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; background: var(--surface3); border: 1px solid var(--border2); border-radius: 4px; padding: 0.15rem 0.4rem; }
+
+.res-placeholder { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+.res-placeholder code { background: var(--surface3); border: 1px solid var(--border); padding: 0.1rem 0.4rem; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--accent2); }
+
+.snap-row { display: flex; gap: 0.6rem; align-items: center; }
+.btn-snap { flex: 1; background: var(--surface3); border: 1px solid var(--border2); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.82rem; font-weight: 500; padding: 0.65rem; border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.15s; }
 .btn-snap:hover { border-color: var(--accent2); color: var(--accent2); }
 .btn-snap svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 .btn-snap:disabled { opacity: 0.3; cursor: not-allowed; }
 
-/* Instructions */
-.instructions {
-  background: rgba(0,255,157,0.04);
-  border: 1px solid rgba(0,255,157,0.15);
-  border-radius: 9px;
-  padding: 0.85rem 1rem;
-  font-size: 0.78rem;
-  color: var(--muted);
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
+.instructions { background: rgba(0,255,157,0.04); border: 1px solid rgba(0,255,157,0.15); border-radius: 9px; padding: 0.85rem 1rem; font-size: 0.78rem; color: var(--muted); line-height: 1.6; display: flex; flex-direction: column; gap: 0.3rem; }
 .instructions strong { color: var(--accent2); font-weight: 600; }
 .inst-steps { display: flex; flex-direction: column; gap: 0.25rem; }
 .inst-step { display: flex; gap: 0.5rem; align-items: flex-start; }
-.inst-num {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
-  color: var(--accent2);
-  background: rgba(0,255,157,0.1);
-  border-radius: 3px;
-  padding: 0.1rem 0.35rem;
-  flex-shrink: 0;
-  margin-top: 2px;
+.inst-num { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--accent2); background: rgba(0,255,157,0.1); border-radius: 3px; padding: 0.1rem 0.35rem; flex-shrink: 0; margin-top: 2px; }
+
+/* Debug strip viewer */
+.debug-strip {
+  display: none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem;
+  flex-direction: column;
+  gap: 0.4rem;
 }
+.debug-strip.on { display: flex; }
+.debug-strip-label { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+#debugCanvas { width: 100%; height: 40px; border-radius: 4px; image-rendering: pixelated; display: block; }
+#debugHsvCanvas { width: 100%; height: 40px; border-radius: 4px; image-rendering: pixelated; display: block; }
 
-/* ─── Divider ─── */
-.divider { height: 1px; background: var(--border); margin: 0.1rem 0; }
-
-/* ─── Responsive ─── */
 @media (max-width: 480px) {
   main { padding: 1rem 0.9rem 3rem; }
   .comp-grid { grid-template-columns: 1fr 1fr; }
@@ -695,11 +295,10 @@ tr:last-child td { border-bottom: none; }
     <div class="logo">Electro<em>Com</em></div>
     <div class="logo-sub">Component Intelligence</div>
   </div>
-  <div class="version-pill">v2.0</div>
+  <div class="version-pill">v2.1</div>
 </header>
 
 <main>
-  <!-- Mode selector -->
   <div class="mode-selector">
     <div class="mode-card detect active" onclick="setMode('detect')">
       <div class="mode-active-dot"></div>
@@ -710,7 +309,7 @@ tr:last-child td { border-bottom: none; }
         </svg>
       </div>
       <div class="mode-title">Component Detect</div>
-      <div class="mode-desc">Identify components & open datasheets via AI</div>
+      <div class="mode-desc">Identify components &amp; open datasheets via AI</div>
     </div>
     <div class="mode-card resistor" onclick="setMode('resistor')">
       <div class="mode-active-dot"></div>
@@ -730,12 +329,8 @@ tr:last-child td { border-bottom: none; }
 
   <!-- ═══ COMPONENT DETECTION PANEL ═══ -->
   <div class="panel active" id="panelDetect">
-
-    <!-- API Key -->
     <div class="card">
-      <div class="card-header">
-        <div class="card-label cyan">Roboflow API</div>
-      </div>
+      <div class="card-header"><div class="card-label cyan">Roboflow API</div></div>
       <div class="card-body">
         <div class="field-group">
           <div class="field-label">API Key</div>
@@ -749,11 +344,8 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- Upload -->
     <div class="card">
-      <div class="card-header">
-        <div class="card-label cyan">Image Input</div>
-      </div>
+      <div class="card-header"><div class="card-label cyan">Image Input</div></div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:0.85rem;">
         <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
              ondragover="event.preventDefault();this.classList.add('drag')"
@@ -764,21 +356,15 @@ tr:last-child td { border-bottom: none; }
           <button class="btn-upload" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Choose Image</button>
         </div>
         <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
-
-        <div class="preview-wrap" id="previewWrap">
-          <canvas id="previewCanvas"></canvas>
-        </div>
-
+        <div class="preview-wrap" id="previewWrap"><canvas id="previewCanvas"></canvas></div>
         <button class="btn-analyze" id="btnAnalyze" onclick="runDetection()">
           <div class="spin"></div>
           <span class="lbl">Detect Components</span>
         </button>
-
         <div class="error-box" id="errorBox"></div>
       </div>
     </div>
 
-    <!-- Results -->
     <div class="results" id="resultsSection">
       <div class="results-bar">
         <span class="results-title">Detected Components</span>
@@ -793,25 +379,21 @@ tr:last-child td { border-bottom: none; }
         </table>
       </div>
     </div>
-
-  </div><!-- /panelDetect -->
-
+  </div>
 
   <!-- ═══ RESISTOR SCANNER PANEL ═══ -->
   <div class="panel" id="panelResistor">
 
-    <!-- Instructions -->
     <div class="instructions">
       <strong>How to scan a resistor</strong>
       <div class="inst-steps">
         <div class="inst-step"><span class="inst-num">1</span><span>Tap <strong>Start Camera</strong> and allow access</span></div>
-        <div class="inst-step"><span class="inst-num">2</span><span>Hold resistor <strong>horizontally</strong> over the green line</span></div>
-        <div class="inst-step"><span class="inst-num">3</span><span>Tap <strong>Snap &amp; Read</strong> to capture &amp; decode the bands</span></div>
+        <div class="inst-step"><span class="inst-num">2</span><span>Hold resistor <strong>horizontally</strong> so the body sits inside the <strong>green box</strong></span></div>
+        <div class="inst-step"><span class="inst-num">3</span><span>Tap <strong>Snap &amp; Read</strong> to decode the bands</span></div>
         <div class="inst-step"><span class="inst-num">4</span><span>Or <strong>upload a photo</strong> of a resistor directly</span></div>
       </div>
     </div>
 
-    <!-- Camera -->
     <div class="card">
       <div class="card-header">
         <div class="card-label green">Live Camera</div>
@@ -820,8 +402,12 @@ tr:last-child td { border-bottom: none; }
       <div class="card-body" style="padding:0;display:flex;flex-direction:column;">
         <div class="camera-wrap">
           <video id="resistorVideo" playsinline muted autoplay></video>
-          <canvas id="resistorCanvas"></canvas>
-          <div class="scan-target" id="scanTarget"></div>
+          <canvas id="resistorCanvas" style="display:none"></canvas>
+          <div class="scan-target" id="scanTarget">
+            <div class="scan-line-inner"></div>
+          </div>
+          <!-- Live band preview overlay -->
+          <div class="live-bands-overlay" id="liveBandsOverlay"></div>
           <div class="camera-overlay" id="camOverlay">
             <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <p>Camera not started.<br>Tap Start Camera below.</p>
@@ -857,20 +443,24 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- Result -->
+    <!-- Debug strip (shown after snap) -->
+    <div class="debug-strip" id="debugStrip">
+      <div class="debug-strip-label">Sampled strip (raw)</div>
+      <canvas id="debugCanvas"></canvas>
+      <div class="debug-strip-label" style="margin-top:0.2rem">HSV-classified pixels</div>
+      <canvas id="debugHsvCanvas"></canvas>
+    </div>
+
     <div class="card" id="resResultCard">
-      <div class="card-header">
-        <div class="card-label green">Reading</div>
-      </div>
+      <div class="card-header"><div class="card-label green">Reading</div></div>
       <div class="card-body" id="resResultBody">
         <div class="res-placeholder">
-          Point your camera at a resistor, then tap <code>Snap &amp; Read</code>.
+          Point camera at a resistor with the body inside the green box, then tap <code>Snap &amp; Read</code>.
         </div>
       </div>
     </div>
 
-  </div><!-- /panelResistor -->
-
+  </div>
 </main>
 
 <script>
@@ -882,7 +472,7 @@ let currentFile = null;
 let previewImageData = null;
 let cameraStream = null;
 let useFrontCamera = false;
-let isProcessingResistor = false;
+let livePreviewRaf = null;
 
 /* ═══════════════════════════════════════════════════════════════
    MODE SWITCHING
@@ -896,7 +486,7 @@ function setMode(mode) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FILE UPLOAD — DETECTION
+   COMPONENT DETECTION — Roboflow (unchanged)
 ═══════════════════════════════════════════════════════════════ */
 function handleDrop(e) {
   e.preventDefault();
@@ -904,10 +494,7 @@ function handleDrop(e) {
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) loadImage(file);
 }
-function handleFile(e) {
-  const file = e.target.files[0];
-  if (file) loadImage(file);
-}
+function handleFile(e) { const file = e.target.files[0]; if (file) loadImage(file); }
 function loadImage(file) {
   currentFile = file;
   const reader = new FileReader();
@@ -931,160 +518,77 @@ function loadImage(file) {
   };
   reader.readAsDataURL(file);
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   DETECTION — Roboflow
-═══════════════════════════════════════════════════════════════ */
 async function runDetection() {
   const apiKey = document.getElementById('apiKey').value.trim();
   if (!apiKey) { showError('Please enter your Roboflow API key.'); return; }
   if (!previewImageData) { showError('Please upload an image first.'); return; }
-
   const btn = document.getElementById('btnAnalyze');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.querySelector('.lbl').textContent = 'Detecting…';
+  btn.disabled = true; btn.classList.add('loading'); btn.querySelector('.lbl').textContent = 'Detecting…';
   document.getElementById('errorBox').classList.remove('on');
   document.getElementById('resultsSection').classList.remove('on');
-
   try {
-    const resp = await fetch('/api/detect', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_key: apiKey, image: previewImageData, model: 'electrocom-61/4' })
-    });
+    const resp = await fetch('/api/detect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ api_key: apiKey, image: previewImageData, model: 'electrocom-61/4' }) });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error || 'Detection failed');
     const filtered = (data.predictions || []).filter(p => p.confidence >= 0.50);
     renderDetectionResults({...data, predictions: filtered});
     drawBboxes(filtered);
-  } catch (err) {
-    showError(err.message);
-  } finally {
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.querySelector('.lbl').textContent = 'Detect Components';
-  }
+  } catch (err) { showError(err.message); }
+  finally { btn.disabled = false; btn.classList.remove('loading'); btn.querySelector('.lbl').textContent = 'Detect Components'; }
 }
-
-function showError(msg) {
-  const box = document.getElementById('errorBox');
-  box.textContent = msg;
-  box.classList.add('on');
-}
-
+function showError(msg) { const box = document.getElementById('errorBox'); box.textContent = msg; box.classList.add('on'); }
 function renderDetectionResults(data) {
   const preds = (data.predictions || []).filter(p => p.confidence >= 0.60);
   const section = document.getElementById('resultsSection');
   const grid = document.getElementById('compGrid');
   const tbody = document.getElementById('summaryBody');
   const countTag = document.getElementById('countTag');
-
-  countTag.textContent = `${preds.length} found`;
-  grid.innerHTML = '';
-  tbody.innerHTML = '';
-
-  if (preds.length === 0) {
-    grid.innerHTML = '<div class="no-result" style="grid-column:1/-1">No components detected. Try a clearer photo.</div>';
-    section.classList.add('on');
-    return;
-  }
-
-  // Group by class
+  countTag.textContent = `${preds.length} found`; grid.innerHTML = ''; tbody.innerHTML = '';
+  if (preds.length === 0) { grid.innerHTML = '<div class="no-result" style="grid-column:1/-1">No components detected. Try a clearer photo.</div>'; section.classList.add('on'); return; }
   const grouped = {};
-  preds.forEach(p => {
-    const k = p.class.toLowerCase();
-    if (!grouped[k]) grouped[k] = [];
-    grouped[k].push(p.confidence);
-  });
-
+  preds.forEach(p => { const k = p.class.toLowerCase(); if (!grouped[k]) grouped[k] = []; grouped[k].push(p.confidence); });
   Object.entries(grouped).sort((a,b) => b[1][0]-a[1][0]).forEach(([cls, confs]) => {
-    const conf = Math.max(...confs);
-    const confPct = Math.round(conf * 100);
+    const conf = Math.max(...confs); const confPct = Math.round(conf * 100);
     const color = confPct >= 75 ? '#00d4ff' : confPct >= 50 ? '#ffa502' : '#ff4757';
     const pillClass = confPct >= 75 ? 'hi' : confPct >= 50 ? 'mid' : 'lo';
-    const dsKey = cls;
-
-    // Card
-    const card = document.createElement('div');
-    card.className = 'comp-card';
-    card.innerHTML = `
-      <div class="comp-name">${cls.replace(/-/g,' ')}</div>
-      <div class="conf-row">
-        <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${confPct}%;background:${color}"></div></div>
-        <div class="conf-num">${confPct}%</div>
-      </div>
-      <div class="card-actions">
-        <button class="act-btn" onclick="openDatasheet('${dsKey}')">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          Open Datasheet
-        </button>
-      </div>`;
+    const card = document.createElement('div'); card.className = 'comp-card';
+    card.innerHTML = `<div class="comp-name">${cls.replace(/-/g,' ')}</div><div class="conf-row"><div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${confPct}%;background:${color}"></div></div><div class="conf-num">${confPct}%</div></div><div class="card-actions"><button class="act-btn" onclick="openDatasheet('${cls}')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Open Datasheet</button></div>`;
     grid.appendChild(card);
-
-    // Table row
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${cls.replace(/-/g,' ')}</td>
-      <td><span class="pill ${pillClass}">${confPct}%</span></td>
-      <td><a href="/datasheets/${dsKey}.pdf" target="_blank" style="color:var(--accent);font-size:0.72rem;text-decoration:none">View ↗</a></td>`;
+    tr.innerHTML = `<td>${cls.replace(/-/g,' ')}</td><td><span class="pill ${pillClass}">${confPct}%</span></td><td><a href="/datasheets/${cls}.pdf" target="_blank" style="color:var(--accent);font-size:0.72rem;text-decoration:none">View ↗</a></td>`;
     tbody.appendChild(tr);
   });
-
   section.classList.add('on');
 }
-
 function drawBboxes(preds) {
-  const canvas = document.getElementById('previewCanvas');
-  const ctx = canvas.getContext('2d');
-  // Redraw image first
+  const canvas = document.getElementById('previewCanvas'); const ctx = canvas.getContext('2d');
   const img = new Image();
   img.onload = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const scaleX = canvas.width / (preds[0]?.image_width || canvas.width);
-    const scaleY = canvas.height / (preds[0]?.image_height || canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const scaleX = canvas.width/(preds[0]?.image_width||canvas.width);
+    const scaleY = canvas.height/(preds[0]?.image_height||canvas.height);
     preds.forEach(p => {
-      const x = (p.x - p.width/2) * scaleX;
-      const y = (p.y - p.height/2) * scaleY;
-      const w = p.width * scaleX;
-      const h = p.height * scaleY;
-      ctx.strokeStyle = '#00d4ff';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x, y, w, h);
-      ctx.fillStyle = 'rgba(0,212,255,0.7)';
-      ctx.fillRect(x, y - 18, ctx.measureText(p.class).width + 10, 18);
-      ctx.fillStyle = '#000';
-      ctx.font = '11px Space Mono, monospace';
-      ctx.fillText(p.class, x + 5, y - 5);
+      const x=(p.x-p.width/2)*scaleX, y=(p.y-p.height/2)*scaleY, w=p.width*scaleX, h=p.height*scaleY;
+      ctx.strokeStyle='#00d4ff'; ctx.lineWidth=2; ctx.strokeRect(x,y,w,h);
+      ctx.fillStyle='rgba(0,212,255,0.7)'; ctx.fillRect(x,y-18,ctx.measureText(p.class).width+10,18);
+      ctx.fillStyle='#000'; ctx.font='11px Space Mono,monospace'; ctx.fillText(p.class,x+5,y-5);
     });
   };
-  img.src = 'data:image/jpeg;base64,' + previewImageData;
+  img.src='data:image/jpeg;base64,'+previewImageData;
 }
-
-function openDatasheet(component) {
-  window.open(`/datasheets/${component}.pdf`, '_blank');
-}
+function openDatasheet(component) { window.open(`/datasheets/${component}.pdf`, '_blank'); }
 
 /* ═══════════════════════════════════════════════════════════════
-   RESISTOR SCANNER — Camera
+   CAMERA
 ═══════════════════════════════════════════════════════════════ */
 async function startCamera() {
   try {
-    const constraints = {
-      video: {
-        facingMode: useFrontCamera ? 'user' : 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        focusMode: 'continuous'
-      }
-    };
+    const constraints = { video: { facingMode: useFrontCamera ? 'user' : 'environment', width:{ideal:1280}, height:{ideal:720} } };
     if (cameraStream) stopCamera();
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
     const video = document.getElementById('resistorVideo');
     video.srcObject = cameraStream;
     await video.play();
-
     document.getElementById('camOverlay').classList.add('hidden');
     document.getElementById('scanTarget').classList.add('on');
     document.getElementById('btnStartCam').disabled = true;
@@ -1092,77 +596,83 @@ async function startCamera() {
     document.getElementById('btnFlipCam').disabled = false;
     document.getElementById('btnSnap').disabled = false;
     document.getElementById('liveTag').classList.add('on');
+    startLivePreview();
   } catch(err) {
-    alert('Camera error: ' + err.message + '\nMake sure you allow camera access.');
+    alert('Camera error: ' + err.message + '\nPlease allow camera access.');
   }
 }
-
 function stopCamera() {
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(t => t.stop());
-    cameraStream = null;
-  }
-  const video = document.getElementById('resistorVideo');
-  video.srcObject = null;
+  stopLivePreview();
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  const video = document.getElementById('resistorVideo'); video.srcObject = null;
   document.getElementById('camOverlay').classList.remove('hidden');
   document.getElementById('scanTarget').classList.remove('on');
+  document.getElementById('liveBandsOverlay').classList.remove('on');
   document.getElementById('btnStartCam').disabled = false;
   document.getElementById('btnStopCam').disabled = true;
   document.getElementById('btnFlipCam').disabled = true;
   document.getElementById('btnSnap').disabled = true;
   document.getElementById('liveTag').classList.remove('on');
 }
+async function flipCamera() { useFrontCamera = !useFrontCamera; await startCamera(); }
 
-async function flipCamera() {
-  useFrontCamera = !useFrontCamera;
-  await startCamera();
+/* Live preview — run band detection on frames so user sees live feedback */
+function startLivePreview() {
+  const video = document.getElementById('resistorVideo');
+  const overlay = document.getElementById('liveBandsOverlay');
+  let lastUpdate = 0;
+
+  function tick(ts) {
+    livePreviewRaf = requestAnimationFrame(tick);
+    if (ts - lastUpdate < 400) return; // update ~2.5 fps
+    lastUpdate = ts;
+    if (!video.videoWidth) return;
+
+    const strip = extractStripFromVideo(video);
+    if (!strip) return;
+    const bands = detectBandsFromStrip(strip.data, strip.width, strip.height);
+    if (bands.length >= 2) {
+      overlay.classList.add('on');
+      overlay.innerHTML = bands.map(b =>
+        `<div class="lbo-swatch" style="background:${COLOR_HEX[b]||'#888'};${b==='white'?'border:1px solid #aaa':''}"></div>`
+      ).join('<div class="lbo-sep"></div>') +
+        `<span class="lbo-label">${bands.length} band${bands.length!==1?'s':''}</span>`;
+    } else {
+      overlay.classList.remove('on');
+    }
+  }
+  livePreviewRaf = requestAnimationFrame(tick);
+}
+function stopLivePreview() {
+  if (livePreviewRaf) { cancelAnimationFrame(livePreviewRaf); livePreviewRaf = null; }
 }
 
-async function snapAndRead() {
+/* ═══════════════════════════════════════════════════════════════
+   SNAP & READ
+═══════════════════════════════════════════════════════════════ */
+function snapAndRead() {
   const video = document.getElementById('resistorVideo');
   if (!video.videoWidth) return;
 
-  // Capture full frame
-  const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0);
+  // Capture full frame to offscreen canvas
+  const cap = document.createElement('canvas');
+  cap.width = video.videoWidth; cap.height = video.videoHeight;
+  cap.getContext('2d').drawImage(video, 0, 0);
 
-  const fullPreview = canvas.toDataURL('image/jpeg', 0.85);
-
-  // Draw green scan line on preview
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const stripW = Math.round(canvas.width * 0.70);
-  ctx.strokeStyle = '#00ff9d';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(cx - stripW/2, cy - 30, stripW, 60);
-
-  // Use full frame for processing (not just the strip)
-  processResistorImage(canvas, fullPreview);
-
-  // Show result card immediately so user sees something
-  const body = document.getElementById('resResultBody');
-  body.innerHTML = `
-    <div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem">
-      <div style="margin-bottom:0.5rem">Analysing bands…</div>
-      <img src="${fullPreview}" style="width:100%;border-radius:7px;border:1px solid var(--border);max-height:200px;object-fit:contain;background:#000">
-    </div>`;
+  const preview = cap.toDataURL('image/jpeg', 0.85);
+  processResistorCanvas(cap, preview);
 }
 
 function handleResistorFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      processResistorImage(canvas, ev.target.result);
+      const cap = document.createElement('canvas');
+      cap.width = img.width; cap.height = img.height;
+      cap.getContext('2d').drawImage(img, 0, 0);
+      processResistorCanvas(cap, ev.target.result);
     };
     img.src = ev.target.result;
   };
@@ -1170,182 +680,347 @@ function handleResistorFile(e) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   RESISTOR COLOUR-BAND DETECTION (JavaScript port of Android app)
-   Based on ResistorScanner by Parth Bhoiwala (OpenCV Android app)
-   Ported to browser Canvas API
+   RESISTOR IMAGE PROCESSOR
+   Faithful port of ResistorImageProcessor.java (Parth Bhoiwala)
+   from OpenCV/Android to browser Canvas API.
+
+   Key algorithm:
+   1. Extract a narrow horizontal strip from the CENTER of the frame
+      (matching submat(rows/2, rows/2+30, ...) in the original)
+   2. Apply bilateral-style smoothing (box-blur approximation)
+   3. Convert each pixel RGB→HSV
+   4. For each of the 10 colour classes, create a binary mask
+      (pixels matching that colour's HSV range = 1, else 0)
+   5. Find connected "contours" in each mask (run-length segments)
+   6. Compute the X centroid of each significant contour
+   7. Sort centroids left-to-right → band order
+   8. Decode resistance from digit/multiplier/tolerance bands
 ═══════════════════════════════════════════════════════════════ */
 
-// HSV colour definitions — ported from ResistorImageProcessor.java
-const COLOR_DEFS = {
-  black:  { ranges: [[0,180,150,255,0,60]],                               digit:0, mult:1,         tol:null     },
-  brown:  { ranges: [[5,20,80,220,20,110]],                               digit:1, mult:10,         tol:'±1%'    },
-  red:    { ranges: [[0,10,150,255,100,255],[165,180,150,255,100,255]],   digit:2, mult:100,        tol:'±2%'    },
-  orange: { ranges: [[8,20,150,255,110,255]],                             digit:3, mult:1000,       tol:null     },
-  yellow: { ranges: [[20,35,80,255,150,255]],                             digit:4, mult:10000,      tol:null     },
-  green:  { ranges: [[35,90,40,255,30,200]],                              digit:5, mult:100000,     tol:'±0.5%'  },
-  blue:   { ranges: [[90,135,50,255,30,220]],                             digit:6, mult:1000000,    tol:'±0.25%' },
-  violet: { ranges: [[125,165,30,220,20,200]],                            digit:7, mult:10000000,   tol:'±0.1%'  },
-  grey:   { ranges: [[0,180,0,60,60,200]],                                digit:8, mult:100000000,  tol:'±0.05%' },
-  white:  { ranges: [[0,180,0,40,200,255]],                               digit:9, mult:1e9,        tol:null     },
-  gold:   { ranges: [[18,30,30,130,150,255]],                             digit:null, mult:0.1,     tol:'±5%'    },
-  silver: { ranges: [[0,180,0,30,140,230]],                               digit:null, mult:0.01,    tol:'±10%'   },
-};
+/**
+ * HSV colour bounds — directly from ResistorImageProcessor.java
+ * OpenCV scale: H[0-180], S[0-255], V[0-255]
+ *
+ * Colours: 0=black,1=brown,2=red,3=orange,4=yellow,
+ *          5=green,6=blue,7=violet,8=grey,9=white
+ */
+const COLOR_BOUNDS = [
+  // black
+  { lo:[0,0,0],   hi:[180,255,50]  },
+  // brown
+  { lo:[0,90,10],  hi:[15,255,100] },
+  // red — two ranges (handled specially below)
+  null,
+  // orange
+  { lo:[4,100,100], hi:[9,255,150] },
+  // yellow
+  { lo:[20,130,100], hi:[30,255,160] },
+  // green
+  { lo:[45,50,60],  hi:[72,255,150] },
+  // blue
+  { lo:[80,50,50],  hi:[106,255,150] },
+  // violet
+  { lo:[130,40,50], hi:[155,255,150] },
+  // grey
+  { lo:[0,0,50],    hi:[180,50,80]  },
+  // white
+  { lo:[0,0,90],    hi:[180,15,140] },
+];
+const RED_LO1 = [0,65,100],   RED_HI1 = [2,255,150];
+const RED_LO2 = [171,65,50],  RED_HI2 = [180,255,150];
 
-const COLOR_HEX = {
-  black:'#000', brown:'#8B4513', red:'#e53935', orange:'#FF6600',
-  yellow:'#FFD600', green:'#388e3c', blue:'#1565C0', violet:'#6A0DAD',
-  grey:'#9E9E9E', white:'#f5f5f5', gold:'#D4AF37', silver:'#C0C0C0'
-};
+// Gold and silver (for tolerance-only bands, not in original 10 but useful)
+const GOLD_LO   = [15,100,100], GOLD_HI   = [25,200,220];
+const SILVER_LO = [0,0,140],    SILVER_HI = [180,30,220];
 
-// RGB → HSV (0-255 scale for H[0-180], S[0-255], V[0-255])
-function rgbToHsv(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  const v = max;
-  const s = max === 0 ? 0 : (max - min) / max;
+const COLOR_NAMES  = ['black','brown','red','orange','yellow','green','blue','violet','grey','white'];
+const COLOR_HEX    = { black:'#111', brown:'#8B4513', red:'#e53935', orange:'#FF6600', yellow:'#FFD600', green:'#388e3c', blue:'#1565C0', violet:'#6A0DAD', grey:'#9E9E9E', white:'#f5f5f5', gold:'#D4AF37', silver:'#C0C0C0' };
+const COLOR_DIGIT  = { black:0, brown:1, red:2, orange:3, yellow:4, green:5, blue:6, violet:7, grey:8, white:9 };
+const COLOR_MULT   = { black:1, brown:10, red:100, orange:1e3, yellow:1e4, green:1e5, blue:1e6, violet:1e7, grey:1e8, white:1e9, gold:0.1, silver:0.01 };
+const COLOR_TOL    = { brown:'±1%', red:'±2%', green:'±0.5%', blue:'±0.25%', violet:'±0.1%', grey:'±0.05%', gold:'±5%', silver:'±10%' };
+
+/** RGB → HSV in OpenCV scale (H:0-180, S:0-255, V:0-255) */
+function rgbToHsvCV(r, g, b) {
+  const rf = r/255, gf = g/255, bf = b/255;
+  const mx = Math.max(rf,gf,bf), mn = Math.min(rf,gf,bf), d = mx - mn;
+  const v = mx;
+  const s = mx === 0 ? 0 : d / mx;
   let h = 0;
-  if (max !== min) {
-    const d = max - min;
-    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-    else if (max === g) h = ((b - r) / d + 2) / 6;
-    else h = ((r - g) / d + 4) / 6;
+  if (d > 0) {
+    if (mx === rf)      h = ((gf - bf) / d % 6) / 6;
+    else if (mx === gf) h = ((bf - rf) / d + 2) / 6;
+    else                h = ((rf - gf) / d + 4) / 6;
+    if (h < 0) h += 1;
   }
   return [Math.round(h * 180), Math.round(s * 255), Math.round(v * 255)];
 }
 
-function pixelMatchesColor(h, s, v, def) {
-  return def.ranges.some(([h1,h2,s1,s2,v1,v2]) =>
-    h >= h1 && h <= h2 && s >= s1 && s <= s2 && v >= v1 && v <= v2
-  );
+function inRange(h,s,v, lo,hi) {
+  return h>=lo[0]&&h<=hi[0] && s>=lo[1]&&s<=hi[1] && v>=lo[2]&&v<=hi[2];
 }
 
-function processResistorImage(imgCanvas, previewSrc) {
-  const w = imgCanvas.width, h = imgCanvas.height;
-  const ctx = imgCanvas.getContext('2d');
-
-  // Resize to max 800px wide for speed
-  let pc = imgCanvas;
-  if (w > 800) {
-    pc = document.createElement('canvas');
-    pc.width = 800; pc.height = Math.round(h * 800 / w);
-    pc.getContext('2d').drawImage(imgCanvas, 0, 0, pc.width, pc.height);
-  }
-  const pw = pc.width, ph = pc.height;
-  const pd = pc.getContext('2d').getImageData(0, 0, pw, ph).data;
-
-  // ── Find body rows (beige/tan pixels) ──
-  const rowBeige = new Array(ph).fill(0);
-  for (let y = 0; y < ph; y++) {
-    for (let x = 0; x < pw; x++) {
-      const i = (y*pw+x)*4;
-      const r=pd[i],g=pd[i+1],b=pd[i+2];
-      if (r>140 && g>100 && b>50 && r>g && g>b && (r-b)>40 && s_val(r,g,b)<180)
-        rowBeige[y]++;
+/** Bilateral-style smoothing: box blur 5x1 on the strip */
+function blurStrip(data, w, h) {
+  const out = new Uint8ClampedArray(data.length);
+  const R = 2; // half-kernel
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let sr=0,sg=0,sb=0,n=0;
+      for (let dx = -R; dx <= R; dx++) {
+        const xi = Math.min(Math.max(x+dx,0),w-1);
+        const i = (y*w+xi)*4;
+        sr+=data[i]; sg+=data[i+1]; sb+=data[i+2]; n++;
+      }
+      const i=(y*w+x)*4;
+      out[i]=sr/n; out[i+1]=sg/n; out[i+2]=sb/n; out[i+3]=255;
     }
   }
-  function s_val(r,g,b){const mx=Math.max(r,g,b);return mx===0?0:Math.round((mx-Math.min(r,g,b))/mx*255);}
+  return out;
+}
 
-  const bthr = pw * 0.06;
-  let bodyTop=-1, bodyBottom=-1;
-  for (let y=0;y<ph;y++) { if(rowBeige[y]>bthr){if(bodyTop<0)bodyTop=y; bodyBottom=y;} }
-  if (bodyTop<0||bodyBottom-bodyTop<8) { bodyTop=Math.floor(ph*0.25); bodyBottom=Math.floor(ph*0.75); }
+/**
+ * Extract the scan strip from a video element.
+ * Matches original: rows/2 to rows/2+30, cols/2-50 to cols/2+50
+ * But we use 80% of width to capture all bands regardless of resistor position.
+ */
+function extractStripFromVideo(video) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  const tmp = document.createElement('canvas');
+  tmp.width = vw; tmp.height = vh;
+  tmp.getContext('2d').drawImage(video, 0, 0);
+  return extractStripFromCanvas(tmp);
+}
 
-  // ── Find body left/right ──
-  let bodyLeft=pw, bodyRight=0;
-  for (let y=bodyTop;y<=bodyBottom;y++) {
-    for (let x=0;x<pw;x++) {
-      const i=(y*pw+x)*4; const r=pd[i],g=pd[i+1],b=pd[i+2];
-      if (r>140&&g>100&&b>50&&r>g&&g>b&&(r-b)>40){if(x<bodyLeft)bodyLeft=x; if(x>bodyRight)bodyRight=x;}
-    }
-  }
-  if (bodyRight-bodyLeft<20){bodyLeft=Math.floor(pw*0.1);bodyRight=Math.floor(pw*0.9);}
+function extractStripFromCanvas(canvas) {
+  const cw = canvas.width, ch = canvas.height;
+  // Strip: center 30px tall, 80% width centered
+  const stripH = Math.max(20, Math.round(ch * 0.06));  // ~30px on typical frames
+  const stripW = Math.round(cw * 0.80);
+  const sx = Math.round((cw - stripW) / 2);
+  const sy = Math.round(ch / 2) - Math.round(stripH / 2);
 
-  const bw=bodyRight-bodyLeft, bh=bodyBottom-bodyTop;
-  const sy1=bodyTop+Math.floor(bh*0.15), sy2=bodyBottom-Math.floor(bh*0.15);
+  const tmp = document.createElement('canvas');
+  tmp.width = stripW; tmp.height = stripH;
+  tmp.getContext('2d').drawImage(canvas, sx, sy, stripW, stripH, 0, 0, stripW, stripH);
+  return tmp.getContext('2d').getImageData(0, 0, stripW, stripH);
+}
 
-  // ── Column scan ──
-  const colColors=[];
-  for (let x=bodyLeft;x<=bodyRight;x++) {
-    const counts={};
-    let scanned=0;
-    for (let y=sy1;y<=sy2;y++) {
-      const i=(y*pw+x)*4;
-      const r=pd[i],g=pd[i+1],b=pd[i+2];
-      // skip beige body
-      if (r>140&&g>100&&b>50&&r>g&&g>b&&(r-b)>40&&s_val(r,g,b)<180) continue;
-      // skip pure black bg
-      if (r<25&&g<25&&b<25) continue;
-      // skip metallic wire (neutral grey, not very dark)
-      const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
-      if ((mx-mn)<20 && r>80 && r<220) continue;
-      scanned++;
-      const [hv,sv,vv]=rgbToHsv(r,g,b);
-      for (const [name,def] of Object.entries(COLOR_DEFS)) {
-        if (pixelMatchesColor(hv,sv,vv,def)){counts[name]=(counts[name]||0)+1; break;}
+/**
+ * Core band detection from a strip ImageData.
+ * Returns array of colour name strings, ordered left to right.
+ */
+function detectBandsFromStrip(rawData, w, h) {
+  // Step 1: blur (approximate bilateral filter)
+  const data = blurStrip(rawData, w, h);
+
+  // Step 2: Build colour masks — for each pixel decide which colour it is
+  // locationValues: Map<centroidX, colorIndex> (matches SparseIntArray in Java)
+  // areas: Map<centroidX, area>
+  const locationValues = new Map(); // centroidX → colorIndex
+  const areas = new Map();          // centroidX → area
+
+  for (let ci = 0; ci < 10; ci++) {
+    // Build binary mask for this colour
+    const mask = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y*w+x)*4;
+        const [hv,sv,vv] = rgbToHsvCV(data[i], data[i+1], data[i+2]);
+        let matched = false;
+        if (ci === 2) {
+          // red: two ranges
+          matched = inRange(hv,sv,vv, RED_LO1,RED_HI1) || inRange(hv,sv,vv, RED_LO2,RED_HI2);
+        } else {
+          const b = COLOR_BOUNDS[ci];
+          matched = inRange(hv,sv,vv, b.lo, b.hi);
+        }
+        if (matched) mask[y*w+x] = 1;
       }
     }
-    let best=null,bestC=0;
-    for (const [n,c] of Object.entries(counts)) if(c>bestC){bestC=c;best=n;}
-    colColors.push((best&&bestC>=Math.max(2,scanned*0.20))?best:null);
+
+    // Step 3: Find run-length "contours" (connected horizontal regions)
+    // We project the mask down to a 1D column profile (OR across all rows)
+    // then find runs of consecutive ON pixels
+    const colOn = new Uint8Array(w);
+    for (let x = 0; x < w; x++) {
+      let cnt = 0;
+      for (let y = 0; y < h; y++) cnt += mask[y*w+x];
+      colOn[x] = cnt > 1 ? 1 : 0; // need at least 2 pixels tall to count
+    }
+
+    // Find runs
+    let inRun = false, runStart = 0, runLen = 0;
+    const runs = [];
+    for (let x = 0; x <= w; x++) {
+      if (x < w && colOn[x]) {
+        if (!inRun) { inRun = true; runStart = x; runLen = 0; }
+        runLen++;
+      } else {
+        if (inRun) {
+          runs.push({ start: runStart, len: runLen });
+          inRun = false;
+        }
+      }
+    }
+
+    // Process runs — matches findLocations logic
+    const MIN_AREA = 20;
+    runs.forEach(run => {
+      // area = total ON pixels within the run
+      let area = 0;
+      for (let x = run.start; x < run.start + run.len; x++) {
+        for (let y = 0; y < h; y++) area += mask[y*w+x];
+      }
+      if (area < MIN_AREA) return;
+
+      // centroid X = weighted mean of x coords
+      let sumX = 0, total = 0;
+      for (let x = run.start; x < run.start + run.len; x++) {
+        let col = 0;
+        for (let y = 0; y < h; y++) col += mask[y*w+x];
+        sumX += x * col; total += col;
+      }
+      const cx = Math.round(total > 0 ? sumX / total : run.start + run.len/2);
+
+      // Merge logic: if another centroid is within 10px, keep the larger one
+      let shouldStore = true;
+      for (const [existCx, existCi] of locationValues) {
+        if (Math.abs(existCx - cx) < 10) {
+          if ((areas.get(existCx) || 0) >= area) {
+            shouldStore = false;
+            break;
+          } else {
+            locationValues.delete(existCx);
+            areas.delete(existCx);
+          }
+        }
+      }
+      if (shouldStore) {
+        locationValues.set(cx, ci);
+        areas.set(cx, area);
+      }
+    });
   }
 
-  // ── Segment bands ──
-  const rawBands=[];
-  let cur=null,runLen=0;
-  for (let i=0;i<=colColors.length;i++) {
-    const c=i<colColors.length?colColors[i]:null;
-    if(c===cur){runLen++;}
-    else{if(cur!==null)rawBands.push({color:cur,width:runLen});cur=c;runLen=1;}
-  }
-
-  const minW=Math.max(3,bw*0.035);
-  const significant=rawBands.filter(b=>b.color&&b.width>=minW);
-  const merged=[];
-  significant.forEach(b=>{
-    if(merged.length&&merged[merged.length-1].color===b.color) merged[merged.length-1].width+=b.width;
-    else merged.push({...b});
-  });
-
-  const bandColors=merged
-    .filter(b=>!(b.color==='white'&&b.width>bw*0.35))
-    .filter(b=>!(b.color==='grey'&&b.width>bw*0.35))
-    .map(b=>b.color);
-
-  renderResistorResult(bandColors, previewSrc, merged);
+  // Step 4: Sort by X position → band order left-to-right
+  const sorted = Array.from(locationValues.entries()).sort((a,b) => a[0]-b[0]);
+  return sorted.map(([, ci]) => COLOR_NAMES[ci]);
 }
+
+/** Format resistance value (Ohm/K/M) */
+function formatOhms(val) {
+  if (val >= 1e6)  return (val/1e6).toFixed(val%1e6===0?0:2) + ' MΩ';
+  if (val >= 1e3)  return (val/1e3).toFixed(val%1e3===0?0:2) + ' KΩ';
+  return val.toFixed(0) + ' Ω';
+}
+
+/** Compute resistance from an ordered array of colour band names */
 function computeResistance(bands) {
-  // Try 4-band: D D M T
+  // 4-band: D1 D2 Multiplier Tolerance
   if (bands.length >= 4) {
-    const b4 = bands.slice(0, 4);
-    const [d1, d2, mult, tol] = b4;
-    const def1 = COLOR_DEFS[d1], def2 = COLOR_DEFS[d2], defM = COLOR_DEFS[mult];
-    if (def1?.digit != null && def2?.digit != null && defM?.mult != null) {
-      const val = (def1.digit * 10 + def2.digit) * defM.mult;
-      return { type:'4-band', value: formatOhms(val), raw: val, tolerance: COLOR_DEFS[tol]?.tol || '±20%', bands: b4 };
+    const [d1,d2,mult,tol] = bands.slice(0,4);
+    if (COLOR_DIGIT[d1]!=null && COLOR_DIGIT[d2]!=null && COLOR_MULT[mult]!=null) {
+      const val = (COLOR_DIGIT[d1]*10 + COLOR_DIGIT[d2]) * COLOR_MULT[mult];
+      return { type:'4-band', value:formatOhms(val), raw:val, tolerance:COLOR_TOL[tol]||'±20%', bands:bands.slice(0,4) };
     }
   }
-  // Try 5-band: D D D M T
+  // 5-band: D1 D2 D3 Multiplier Tolerance
   if (bands.length >= 5) {
-    const b5 = bands.slice(0, 5);
-    const [d1, d2, d3, mult, tol] = b5;
-    const def1 = COLOR_DEFS[d1], def2 = COLOR_DEFS[d2], def3 = COLOR_DEFS[d3], defM = COLOR_DEFS[mult];
-    if (def1?.digit != null && def2?.digit != null && def3?.digit != null && defM?.mult != null) {
-      const val = (def1.digit * 100 + def2.digit * 10 + def3.digit) * defM.mult;
-      return { type:'5-band', value: formatOhms(val), raw: val, tolerance: COLOR_DEFS[tol]?.tol || '±1%', bands: b5 };
+    const [d1,d2,d3,mult,tol] = bands.slice(0,5);
+    if (COLOR_DIGIT[d1]!=null && COLOR_DIGIT[d2]!=null && COLOR_DIGIT[d3]!=null && COLOR_MULT[mult]!=null) {
+      const val = (COLOR_DIGIT[d1]*100 + COLOR_DIGIT[d2]*10 + COLOR_DIGIT[d3]) * COLOR_MULT[mult];
+      return { type:'5-band', value:formatOhms(val), raw:val, tolerance:COLOR_TOL[tol]||'±1%', bands:bands.slice(0,5) };
+    }
+  }
+  // 3-band: D1 D2 Multiplier (tolerance implied ±20%)
+  if (bands.length >= 3) {
+    const [d1,d2,mult] = bands.slice(0,3);
+    if (COLOR_DIGIT[d1]!=null && COLOR_DIGIT[d2]!=null && COLOR_MULT[mult]!=null) {
+      const val = (COLOR_DIGIT[d1]*10 + COLOR_DIGIT[d2]) * COLOR_MULT[mult];
+      return { type:'3-band', value:formatOhms(val), raw:val, tolerance:'±20%', bands:bands.slice(0,3) };
     }
   }
   return null;
 }
 
-function renderResistorResult(bandColors, previewSrc, rawBands) {
+/** Main entry — called from snap/upload */
+function processResistorCanvas(canvas, previewSrc) {
+  // Show loading state
+  document.getElementById('resResultBody').innerHTML =
+    `<div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem">Analysing bands…</div>`;
+
+  // Resize if very large
+  let c = canvas;
+  if (canvas.width > 1200) {
+    c = document.createElement('canvas');
+    c.width = 1200; c.height = Math.round(canvas.height * 1200/canvas.width);
+    c.getContext('2d').drawImage(canvas,0,0,c.width,c.height);
+  }
+
+  const strip = extractStripFromCanvas(c);
+
+  // Show debug canvases
+  showDebugStrip(strip);
+
+  const bands = detectBandsFromStrip(strip.data, strip.width, strip.height);
+  showDebugHsv(strip.data, strip.width, strip.height, bands);
+
+  renderResistorResult(bands, previewSrc, c);
+}
+
+/** Show the raw sampled strip */
+function showDebugStrip(strip) {
+  const dc = document.getElementById('debugCanvas');
+  dc.width = strip.width; dc.height = strip.height;
+  dc.getContext('2d').putImageData(strip, 0, 0);
+  document.getElementById('debugStrip').classList.add('on');
+}
+
+/** Show HSV-classified version of the strip */
+function showDebugHsv(rawData, w, h, foundBands) {
+  const dc = document.getElementById('debugHsvCanvas');
+  dc.width = w; dc.height = h;
+  const ctx = dc.getContext('2d');
+  const img = ctx.createImageData(w, h);
+  const blurred = blurStrip(rawData, w, h);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i=(y*w+x)*4;
+      const [hv,sv,vv]=rgbToHsvCV(blurred[i],blurred[i+1],blurred[i+2]);
+      let matched = -1;
+      for (let ci=0;ci<10;ci++) {
+        if(ci===2){ if(inRange(hv,sv,vv,RED_LO1,RED_HI1)||inRange(hv,sv,vv,RED_LO2,RED_HI2)){matched=ci;break;} }
+        else if(COLOR_BOUNDS[ci] && inRange(hv,sv,vv,COLOR_BOUNDS[ci].lo,COLOR_BOUNDS[ci].hi)){matched=ci;break;}
+      }
+      if (matched>=0) {
+        const hex=COLOR_HEX[COLOR_NAMES[matched]];
+        const [r2,g2,b2]=hexToRgb(hex);
+        img.data[i]=r2;img.data[i+1]=g2;img.data[i+2]=b2;img.data[i+3]=255;
+      } else {
+        img.data[i]=20;img.data[i+1]=25;img.data[i+2]=30;img.data[i+3]=255;
+      }
+    }
+  }
+  ctx.putImageData(img,0,0);
+}
+
+function hexToRgb(hex) {
+  const r=parseInt(hex.slice(1,3),16)||0, g=parseInt(hex.slice(3,5),16)||0, b=parseInt(hex.slice(5,7),16)||0;
+  return [r,g,b];
+}
+
+/** Render the resistor result card */
+function renderResistorResult(bandColors, previewSrc, processedCanvas) {
   const body = document.getElementById('resResultBody');
 
   if (bandColors.length < 3) {
     body.innerHTML = `
       <div class="res-placeholder">
-        <p>Only <strong>${bandColors.length}</strong> band(s) detected.</p>
-        <p style="margin-top:0.5rem">Tips: ensure good lighting, hold resistor <strong>horizontally</strong>, keep bands in the green target box.</p>
-        ${bandColors.length > 0 ? `<p style="margin-top:0.5rem;font-size:0.72rem;color:var(--muted)">Detected: ${bandColors.join(', ')}</p>` : ''}
+        <p>Only <strong>${bandColors.length}</strong> colour band(s) detected.</p>
+        <p style="margin-top:0.5rem">Tips: ensure <strong>good lighting</strong>, hold resistor <strong>horizontally</strong> with the body fully inside the green box, and avoid shadows.</p>
+        ${bandColors.length>0?`<p style="margin-top:0.5rem;font-size:0.72rem;color:var(--muted)">Detected: ${bandColors.join(', ')}</p>`:''}
       </div>`;
     return;
   }
@@ -1355,21 +1030,22 @@ function renderResistorResult(bandColors, previewSrc, rawBands) {
   if (!result) {
     body.innerHTML = `
       <div class="res-placeholder">
-        <p>Bands detected: <strong>${bandColors.join(', ')}</strong></p>
-        <p style="margin-top:0.5rem">Could not decode a valid resistance. Try a clearer image.</p>
+        <p>Bands detected: <strong>${bandColors.join(' → ')}</strong></p>
+        <p style="margin-top:0.5rem">Could not decode a valid resistance value. Make sure the colour bands are clearly visible.</p>
       </div>`;
     return;
   }
 
-  // Build band display
+  const labelMap4 = ['D1','D2','×','Tol'];
+  const labelMap5 = ['D1','D2','D3','×','Tol'];
+  const labelMap3 = ['D1','D2','×'];
+
   const bandsHtml = result.bands.map((b, i) => {
     const hex = COLOR_HEX[b] || '#888';
-    const border = b === 'white' ? 'border:1px solid #ccc;' : '';
-    const labels = result.type === '4-band'
-      ? ['D1','D2','×','Tol']
-      : ['D1','D2','D3','×','Tol'];
+    const bdr = b === 'white' ? '1px solid #ccc' : '1px solid rgba(255,255,255,0.1)';
+    const labels = result.type==='5-band' ? labelMap5 : result.type==='4-band' ? labelMap4 : labelMap3;
     return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div style="width:22px;height:44px;border-radius:3px;background:${hex};${border}border:1px solid rgba(255,255,255,0.1)"></div>
+      <div style="width:22px;height:44px;border-radius:3px;background:${hex};border:${bdr}"></div>
       <span style="font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--muted)">${labels[i]||''}</span>
       <span style="font-family:'Space Mono',monospace;font-size:0.5rem;color:var(--text);text-transform:capitalize">${b}</span>
     </div>`;
@@ -1382,26 +1058,23 @@ function renderResistorResult(bandColors, previewSrc, rawBands) {
         <div class="res-tol">${result.tolerance}</div>
         <div class="res-type">${result.type}</div>
       </div>
-      <div style="display:flex;gap:6px;align-items:flex-end;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:10px 14px 24px;margin-top:0.5rem;position:relative;overflow:visible">
+      <div style="display:flex;gap:6px;align-items:flex-end;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:10px 14px 24px;margin-top:0.5rem;position:relative">
         ${bandsHtml}
         <div style="position:absolute;bottom:5px;left:14px;font-family:'Space Mono',monospace;font-size:0.55rem;color:var(--muted)">COLOUR BANDS</div>
       </div>
     </div>
-    ${previewSrc ? `<img src="${previewSrc}" style="width:100%;border-radius:7px;border:1px solid var(--border);margin-top:0.25rem;max-height:180px;object-fit:contain;background:#000" alt="Captured frame">` : ''}
+    ${previewSrc?`<img src="${previewSrc}" style="width:100%;border-radius:7px;border:1px solid var(--border);margin-top:0.5rem;max-height:180px;object-fit:contain;background:#000" alt="Captured frame">`:''}
     <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem">
-      All detected bands: ${bandColors.join(' → ')}
+      All detected: ${bandColors.join(' → ')}
     </div>`;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════════════ */
-// Restore API key from sessionStorage
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('apiKey').value = 'SPhHz9xahv2jc22QYz1Z';
-  document.getElementById('apiKey').addEventListener('input', e => {
-    sessionStorage.setItem('ec_apikey', e.target.value);
-  });
+  document.getElementById('apiKey').addEventListener('input', e => sessionStorage.setItem('ec_apikey', e.target.value));
 });
 </script>
 </body>
