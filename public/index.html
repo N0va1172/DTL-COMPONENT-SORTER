@@ -1232,14 +1232,13 @@ function processResistorImage(imgCanvas, previewSrc) {
   const imageData = ctx.getImageData(0, 0, w, h);
   const pixels = imageData.data;
 
-  // ── Step 1: Find the resistor body by looking for beige/tan pixels ──
+  // ── Step 1: Find resistor body (beige/tan/cream pixels) ──
   let bodyTop = h, bodyBottom = 0, bodyLeft = w, bodyRight = 0;
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
       const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-      // Beige/cream/tan body detection
-      if (r > 160 && g > 130 && b > 80 && r > g && g > b && (r - b) > 30) {
+      if (r > 150 && g > 120 && b > 70 && r > b && (r - b) > 25 && r > g * 0.85) {
         if (y < bodyTop) bodyTop = y;
         if (y > bodyBottom) bodyBottom = y;
         if (x < bodyLeft) bodyLeft = x;
@@ -1248,73 +1247,73 @@ function processResistorImage(imgCanvas, previewSrc) {
     }
   }
 
-  // Fallback: use middle third of image
+  // Fallback to centre if body not found
   if (bodyBottom - bodyTop < 10 || bodyRight - bodyLeft < 20) {
-    bodyTop = Math.floor(h * 0.3);
-    bodyBottom = Math.floor(h * 0.7);
-    bodyLeft = Math.floor(w * 0.15);
-    bodyRight = Math.floor(w * 0.85);
+    bodyTop = Math.floor(h * 0.25);
+    bodyBottom = Math.floor(h * 0.75);
+    bodyLeft = Math.floor(w * 0.10);
+    bodyRight = Math.floor(w * 0.90);
   }
-
-  // Add small padding
-  bodyTop    = Math.max(0, bodyTop - 4);
-  bodyBottom = Math.min(h - 1, bodyBottom + 4);
-  bodyLeft   = Math.max(0, bodyLeft - 4);
-  bodyRight  = Math.min(w - 1, bodyRight + 4);
 
   const bw = bodyRight - bodyLeft;
   const bh = bodyBottom - bodyTop;
+  const scanY1 = bodyTop  + Math.floor(bh * 0.20);
+  const scanY2 = bodyBottom - Math.floor(bh * 0.20);
 
-  // ── Step 2: Scan columns across the body centre row ──
-  const scanY1 = bodyTop  + Math.floor(bh * 0.25);
-  const scanY2 = bodyBottom - Math.floor(bh * 0.25);
-
-  // For each column, count colour matches across the scan rows
+  // ── Step 2: For each column get dominant band colour ──
   const colColors = [];
   for (let x = bodyLeft; x <= bodyRight; x++) {
     const counts = {};
-    let totalColored = 0;
+    const scanH = scanY2 - scanY1 + 1;
+
     for (let y = scanY1; y <= scanY2; y++) {
       const i = (y * w + x) * 4;
       const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+
       // Skip beige body pixels
-      if (r > 160 && g > 130 && b > 80 && r > g && g > b && (r-b) > 30) continue;
-      // Skip very dark background
-      if (r < 40 && g < 40 && b < 40) continue;
+      if (r > 150 && g > 120 && b > 70 && r > b && (r - b) > 25) continue;
+      // Skip very dark background (below 35 brightness)
+      if (r < 35 && g < 35 && b < 35) continue;
+      // Skip lead/wire (near-grey metallic)
+      if (Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && r > 100 && r < 210) continue;
+
       const [hv, sv, vv] = rgbToHsv(r, g, b);
       for (const [name, def] of Object.entries(COLOR_DEFS)) {
         if (pixelMatchesColor(hv, sv, vv, def)) {
           counts[name] = (counts[name] || 0) + 1;
-          totalColored++;
           break;
         }
       }
     }
-    // Pick dominant color for this column (must be >15% of scan height)
-    const scanH = scanY2 - scanY1 + 1;
+
     let best = null, bestC = 0;
     for (const [name, cnt] of Object.entries(counts)) {
       if (cnt > bestC) { bestC = cnt; best = name; }
     }
-    colColors.push(bestC >= scanH * 0.15 ? best : null);
+    // Must match at least 15% of scanned rows
+    colColors.push((best && bestC >= scanH * 0.15) ? best : null);
   }
 
-  // ── Step 3: Segment into bands ──
-  const bands = [];
-  let cur = colColors[0], start = 0;
-  for (let i = 1; i <= colColors.length; i++) {
-    const d = colColors[i] ?? '__end__';
-    if (d !== cur) {
-      if (cur !== null) bands.push({ color: cur, width: i - start });
-      cur = d; start = i;
+  // ── Step 3: Segment columns into bands (NO __end__ leak) ──
+  const rawBands = [];
+  let cur = null, runLen = 0;
+  for (let i = 0; i <= colColors.length; i++) {
+    const c = i < colColors.length ? colColors[i] : null;
+    if (c === cur) {
+      runLen++;
+    } else {
+      if (cur !== null && runLen > 0) {
+        rawBands.push({ color: cur, width: runLen });
+      }
+      cur = c;
+      runLen = 1;
     }
   }
 
-  // Filter narrow noise bands (< 4% of body width)
-  const minW = Math.max(3, bw * 0.04);
-  const filtered = bands.filter(b => b.color && b.width >= minW);
+  // ── Step 4: Filter and merge ──
+  const minW = Math.max(3, bw * 0.035);
+  const filtered = rawBands.filter(b => b.color && b.width >= minW);
 
-  // Merge adjacent same-color bands
   const merged = [];
   filtered.forEach(b => {
     if (merged.length && merged[merged.length-1].color === b.color) {
@@ -1324,8 +1323,8 @@ function processResistorImage(imgCanvas, previewSrc) {
     }
   });
 
-  // Remove body-colour spans that are too wide (leads/body)
-  const maxSpan = bw * 0.40;
+  // Remove overly wide spans of neutral colours (body remnants)
+  const maxSpan = bw * 0.38;
   const bandColors = merged
     .filter(b => !(b.color === 'white' && b.width > maxSpan))
     .filter(b => !(b.color === 'grey'  && b.width > maxSpan))
@@ -1333,7 +1332,6 @@ function processResistorImage(imgCanvas, previewSrc) {
 
   renderResistorResult(bandColors, previewSrc, merged);
 }
-
 function formatOhms(val) {
   if (val >= 1e6) return (val/1e6).toPrecision(3).replace(/\.?0+$/,'') + ' MΩ';
   if (val >= 1e3) return (val/1e3).toPrecision(3).replace(/\.?0+$/,'') + ' kΩ';
