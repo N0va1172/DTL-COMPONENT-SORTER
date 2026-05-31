@@ -1122,26 +1122,33 @@ async function snapAndRead() {
   const video = document.getElementById('resistorVideo');
   if (!video.videoWidth) return;
 
+  // Capture full frame
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0);
 
-  // Crop the scanning strip (center 30px horizontal band)
+  const fullPreview = canvas.toDataURL('image/jpeg', 0.85);
+
+  // Draw green scan line on preview
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
   const stripW = Math.round(canvas.width * 0.70);
-  const stripH = 60;
-  const sx = cx - stripW / 2;
-  const sy = cy - stripH / 2;
+  ctx.strokeStyle = '#00ff9d';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cx - stripW/2, cy - 30, stripW, 60);
 
-  const stripCanvas = document.createElement('canvas');
-  stripCanvas.width = stripW;
-  stripCanvas.height = stripH;
-  stripCanvas.getContext('2d').drawImage(canvas, sx, sy, stripW, stripH, 0, 0, stripW, stripH);
+  // Use full frame for processing (not just the strip)
+  processResistorImage(canvas, fullPreview);
 
-  processResistorImage(stripCanvas, canvas.toDataURL('image/jpeg', 0.85));
+  // Show result card immediately so user sees something
+  const body = document.getElementById('resResultBody');
+  body.innerHTML = `
+    <div style="text-align:center;padding:1rem;color:var(--muted);font-size:0.82rem">
+      <div style="margin-bottom:0.5rem">Analysing bands…</div>
+      <img src="${fullPreview}" style="width:100%;border-radius:7px;border:1px solid var(--border);max-height:200px;object-fit:contain;background:#000">
+    </div>`;
 }
 
 function handleResistorFile(e) {
