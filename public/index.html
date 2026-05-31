@@ -1177,18 +1177,18 @@ function handleResistorFile(e) {
 
 // HSV colour definitions — ported from ResistorImageProcessor.java
 const COLOR_DEFS = {
-  black:  { h:[0,180],   s:[0,250],   v:[0,50],    digit:0, mult:1,          tol:null         },
-  brown:  { h:[5,20],    s:[50,220],  v:[30,160],  digit:1, mult:10,         tol:'±1%'        },
-  red:    { h:[[0,10],[165,180]], s:[80,255], v:[50,255], digit:2, mult:100, tol:'±2%'        },
-  orange: { h:[10,22],   s:[80,255],  v:[120,255], digit:3, mult:1000,       tol:null         },
-  yellow: { h:[22,35],   s:[80,255],  v:[100,255], digit:4, mult:10000,      tol:null         },
-  green:  { h:[35,85],   s:[50,255],  v:[30,200],  digit:5, mult:100000,     tol:'±0.5%'      },
-  blue:   { h:[90,130],  s:[50,255],  v:[40,220],  digit:6, mult:1000000,    tol:'±0.25%'     },
-  violet: { h:[130,165], s:[30,200],  v:[30,220],  digit:7, mult:10000000,   tol:'±0.1%'      },
-  grey:   { h:[0,180],   s:[0,50],    v:[60,200],  digit:8, mult:100000000,  tol:'±0.05%'     },
-  white:  { h:[0,180],   s:[0,60],    v:[180,255], digit:9, mult:1000000000, tol:null         },
-  gold:   { h:[22,35],   s:[60,160],  v:[80,200],  digit:null, mult:0.1,     tol:'±5%'        },
-  silver: { h:[0,180],   s:[0,30],    v:[150,220], digit:null, mult:0.01,    tol:'±10%'       },
+  black:  { ranges: [[0,180,0,255,0,50]],                                          digit:0, mult:1,         tol:null    },
+  brown:  { ranges: [[5,25,40,200,30,150]],                                         digit:1, mult:10,        tol:'±1%'   },
+  red:    { ranges: [[0,8,100,255,50,200],[165,180,100,255,50,200]],                digit:2, mult:100,       tol:'±2%'   },
+  orange: { ranges: [[8,20,150,255,100,255]],                                       digit:3, mult:1000,      tol:null    },
+  yellow: { ranges: [[20,35,100,255,150,255]],                                      digit:4, mult:10000,     tol:null    },
+  green:  { ranges: [[35,90,40,255,30,200]],                                        digit:5, mult:100000,    tol:'±0.5%' },
+  blue:   { ranges: [[90,135,50,255,30,220]],                                       digit:6, mult:1000000,   tol:'±0.25%'},
+  violet: { ranges: [[125,165,30,220,20,200]],                                      digit:7, mult:10000000,  tol:'±0.1%' },
+  grey:   { ranges: [[0,180,0,40,50,190]],                                          digit:8, mult:100000000, tol:'±0.05%'},
+  white:  { ranges: [[0,180,0,30,200,255]],                                         digit:9, mult:1e9,       tol:null    },
+  gold:   { ranges: [[18,32,40,180,100,210]],                                       digit:null, mult:0.1,    tol:'±5%'   },
+  silver: { ranges: [[0,180,0,25,160,230]],                                         digit:null, mult:0.01,   tol:'±10%'  },
 };
 
 const COLOR_HEX = {
@@ -1214,69 +1214,92 @@ function rgbToHsv(r, g, b) {
 }
 
 function pixelMatchesColor(h, s, v, def) {
-  const [vs, ve] = [def.s[0], def.s[1]];
-  const [vv1, vv2] = [def.v[0], def.v[1]];
-  if (s < vs || s > ve) return false;
-  if (v < vv1 || v > vv2) return false;
-  // Handle multi-range hue (red)
-  if (Array.isArray(def.h[0])) {
-    return def.h.some(([lo, hi]) => h >= lo && h <= hi);
-  }
-  return h >= def.h[0] && h <= def.h[1];
+  return def.ranges.some(([h1,h2,s1,s2,v1,v2]) =>
+    h >= h1 && h <= h2 && s >= s1 && s <= s2 && v >= v1 && v <= v2
+  );
 }
 
 function processResistorImage(imgCanvas, previewSrc) {
   const w = imgCanvas.width;
   const h = imgCanvas.height;
   const ctx = imgCanvas.getContext('2d');
-  const imageData = ctx.getImageData(0, 0, w, h);
+
+  // Resize for speed if too large
+  let procCanvas = imgCanvas;
+  if (w > 800) {
+    procCanvas = document.createElement('canvas');
+    procCanvas.width = 800;
+    procCanvas.height = Math.round(h * 800 / w);
+    procCanvas.getContext('2d').drawImage(imgCanvas, 0, 0, procCanvas.width, procCanvas.height);
+  }
+
+  const pw = procCanvas.width, ph = procCanvas.height;
+  const pctx = procCanvas.getContext('2d');
+  const imageData = pctx.getImageData(0, 0, pw, ph);
   const pixels = imageData.data;
 
-  // ── Step 1: Find resistor body (beige/tan/cream pixels) ──
-  let bodyTop = h, bodyBottom = 0, bodyLeft = w, bodyRight = 0;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
+  // ── Step 1: Find resistor body rows ──
+  // Scan each row, find rows with lots of beige/tan pixels
+  const rowBeige = new Array(ph).fill(0);
+  for (let y = 0; y < ph; y++) {
+    for (let x = 0; x < pw; x++) {
+      const i = (y * pw + x) * 4;
       const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-      if (r > 150 && g > 120 && b > 70 && r > b && (r - b) > 25 && r > g * 0.85) {
-        if (y < bodyTop) bodyTop = y;
-        if (y > bodyBottom) bodyBottom = y;
+      // Beige/cream: R high, G mid, B low, warm tone
+      if (r > 160 && g > 120 && b > 60 && b < 180 && r > g && g > b && (r-b) > 40) {
+        rowBeige[y]++;
+      }
+    }
+  }
+
+  // Find row range with significant beige
+  const beigeThr = pw * 0.08;
+  let bodyTop = -1, bodyBottom = -1;
+  for (let y = 0; y < ph; y++) {
+    if (rowBeige[y] > beigeThr) { if (bodyTop < 0) bodyTop = y; bodyBottom = y; }
+  }
+  if (bodyTop < 0 || bodyBottom - bodyTop < 5) {
+    bodyTop = Math.floor(ph * 0.25); bodyBottom = Math.floor(ph * 0.75);
+  }
+
+  // ── Step 2: Find body left/right extent ──
+  const scanMidY = Math.floor((bodyTop + bodyBottom) / 2);
+  let bodyLeft = pw, bodyRight = 0;
+  for (let y = bodyTop; y <= bodyBottom; y++) {
+    for (let x = 0; x < pw; x++) {
+      const i = (y * pw + x) * 4;
+      const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+      if (r > 140 && g > 100 && b > 50 && r > b && (r-b) > 30) {
         if (x < bodyLeft) bodyLeft = x;
         if (x > bodyRight) bodyRight = x;
       }
     }
   }
-
-  // Fallback to centre if body not found
-  if (bodyBottom - bodyTop < 10 || bodyRight - bodyLeft < 20) {
-    bodyTop = Math.floor(h * 0.25);
-    bodyBottom = Math.floor(h * 0.75);
-    bodyLeft = Math.floor(w * 0.10);
-    bodyRight = Math.floor(w * 0.90);
-  }
+  if (bodyRight - bodyLeft < 20) { bodyLeft = Math.floor(pw*0.1); bodyRight = Math.floor(pw*0.9); }
 
   const bw = bodyRight - bodyLeft;
   const bh = bodyBottom - bodyTop;
-  const scanY1 = bodyTop  + Math.floor(bh * 0.20);
-  const scanY2 = bodyBottom - Math.floor(bh * 0.20);
+  const scanY1 = bodyTop + Math.floor(bh * 0.15);
+  const scanY2 = bodyBottom - Math.floor(bh * 0.15);
 
-  // ── Step 2: For each column get dominant band colour ──
+  // ── Step 3: Column colour scan ──
   const colColors = [];
   for (let x = bodyLeft; x <= bodyRight; x++) {
     const counts = {};
-    const scanH = scanY2 - scanY1 + 1;
+    let scanned = 0;
 
     for (let y = scanY1; y <= scanY2; y++) {
-      const i = (y * w + x) * 4;
+      const i = (y * pw + x) * 4;
       const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
 
-      // Skip beige body pixels
-      if (r > 150 && g > 120 && b > 70 && r > b && (r - b) > 25) continue;
-      // Skip very dark background (below 35 brightness)
-      if (r < 35 && g < 35 && b < 35) continue;
-      // Skip lead/wire (near-grey metallic)
-      if (Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && r > 100 && r < 210) continue;
+      // Skip beige body
+      if (r > 150 && g > 110 && b > 55 && r > b && (r-b) > 35 && r > g*0.9) continue;
+      // Skip pure black background
+      if (r < 30 && g < 30 && b < 30) continue;
+      // Skip metallic lead (neutral grey)
+      if (Math.abs(r-g) < 18 && Math.abs(g-b) < 18 && r > 80) continue;
 
+      scanned++;
       const [hv, sv, vv] = rgbToHsv(r, g, b);
       for (const [name, def] of Object.entries(COLOR_DEFS)) {
         if (pixelMatchesColor(hv, sv, vv, def)) {
@@ -1290,54 +1313,41 @@ function processResistorImage(imgCanvas, previewSrc) {
     for (const [name, cnt] of Object.entries(counts)) {
       if (cnt > bestC) { bestC = cnt; best = name; }
     }
-    // Must match at least 15% of scanned rows
-    colColors.push((best && bestC >= scanH * 0.15) ? best : null);
+    const threshold = Math.max(2, scanned * 0.18);
+    colColors.push((best && bestC >= threshold) ? best : null);
   }
 
-  // ── Step 3: Segment columns into bands (NO __end__ leak) ──
+  // ── Step 4: Segment into bands ──
   const rawBands = [];
   let cur = null, runLen = 0;
   for (let i = 0; i <= colColors.length; i++) {
     const c = i < colColors.length ? colColors[i] : null;
-    if (c === cur) {
-      runLen++;
-    } else {
-      if (cur !== null && runLen > 0) {
-        rawBands.push({ color: cur, width: runLen });
-      }
-      cur = c;
-      runLen = 1;
+    if (c === cur) { runLen++; }
+    else {
+      if (cur !== null) rawBands.push({ color: cur, width: runLen });
+      cur = c; runLen = 1;
     }
   }
 
-  // ── Step 4: Filter and merge ──
-  const minW = Math.max(3, bw * 0.035);
-  const filtered = rawBands.filter(b => b.color && b.width >= minW);
+  // ── Step 5: Filter noise, merge same-color neighbours ──
+  const minW = Math.max(3, bw * 0.04);
+  const significant = rawBands.filter(b => b.color && b.width >= minW);
 
   const merged = [];
-  filtered.forEach(b => {
-    if (merged.length && merged[merged.length-1].color === b.color) {
+  significant.forEach(b => {
+    if (merged.length && merged[merged.length-1].color === b.color)
       merged[merged.length-1].width += b.width;
-    } else {
-      merged.push({...b});
-    }
+    else merged.push({...b});
   });
 
-  // Remove overly wide spans of neutral colours (body remnants)
-  const maxSpan = bw * 0.38;
+  // Drop overly-wide neutral bands (body colour leaking through)
   const bandColors = merged
-    .filter(b => !(b.color === 'white' && b.width > maxSpan))
-    .filter(b => !(b.color === 'grey'  && b.width > maxSpan))
+    .filter(b => !(b.color === 'white' && b.width > bw * 0.35))
+    .filter(b => !(b.color === 'grey'  && b.width > bw * 0.35))
     .map(b => b.color);
 
   renderResistorResult(bandColors, previewSrc, merged);
 }
-function formatOhms(val) {
-  if (val >= 1e6) return (val/1e6).toPrecision(3).replace(/\.?0+$/,'') + ' MΩ';
-  if (val >= 1e3) return (val/1e3).toPrecision(3).replace(/\.?0+$/,'') + ' kΩ';
-  return val.toPrecision(3).replace(/\.?0+$/,'') + ' Ω';
-}
-
 function computeResistance(bands) {
   // Try 4-band: D D M T
   if (bands.length >= 4) {
