@@ -42,10 +42,13 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background:
+    radial-gradient(circle at top left,
+      rgba(37,99,235,0.08),
+      transparent 35%),
+    radial-gradient(circle at bottom right,
+      rgba(16,185,129,0.06),
+      transparent 40%);
   pointer-events: none;
   z-index: 0;
 }
@@ -103,7 +106,18 @@ main {
 .panel.active { display: flex; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.04),
+    0 12px 32px rgba(0,0,0,0.06);
+
+  transition: all 0.25s ease;
+}
 .card-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; background: var(--surface2); }
 .card-label { font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 .card-label.cyan { color: var(--accent); }
