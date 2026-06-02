@@ -520,7 +520,7 @@ async function runDetection() {
     const resp = await fetch('/api/detect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ api_key: apiKey, image: previewImageData, model: 'electrocom-61/4' }) });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error || 'Detection failed');
-    const filtered = (data.predictions || []).filter(p => p.confidence >= 0.50);
+    const filtered = (data.predictions || []).filter(p => p.confidence >= 0.63);
     renderDetectionResults({...data, predictions: filtered});
     drawBboxes(filtered);
   } catch (err) { showError(err.message); }
@@ -528,7 +528,7 @@ async function runDetection() {
 }
 function showError(msg) { const box = document.getElementById('errorBox'); box.textContent = msg; box.classList.add('on'); }
 function renderDetectionResults(data) {
-  const preds = (data.predictions || []).filter(p => p.confidence >= 0.60);
+  const preds = (data.predictions || []).filter(p => p.confidence >= 0.63);
   const section = document.getElementById('resultsSection');
   const grid = document.getElementById('compGrid');
   const tbody = document.getElementById('summaryBody');
